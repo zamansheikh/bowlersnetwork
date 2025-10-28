@@ -10,19 +10,94 @@ export default function Home() {
     email: ''
   });
 
+  const [verificationCode, setVerificationCode] = useState('');
+  const [step, setStep] = useState<'form' | 'verify'>('form');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<{
     type: 'success' | 'error' | null;
     message: string;
   }>({ type: null, message: '' });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Handle sending OTP
+  const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus({ type: null, message: '' });
 
     try {
-      const response = await fetch('/api/register', {
+      const response = await fetch('/api/send-verification-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setStep('verify');
+        setSubmitStatus({
+          type: 'success',
+          message: data.message || 'Verification code sent to your email!',
+        });
+
+        // Show debug OTP in development
+        if (data.debug_otp) {
+          console.log('🔐 Debug OTP:', data.debug_otp);
+          alert(`Development Mode - Your OTP is: ${data.debug_otp}`);
+        }
+      } else {
+        setSubmitStatus({
+          type: 'error',
+          message: data.error || 'Failed to send verification code.',
+        });
+      }
+    } catch (error) {
+      setSubmitStatus({
+        type: 'error',
+        message: 'Network error. Please check your connection and try again.',
+      });
+      console.error('Send OTP error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle verifying OTP and final submission
+  const handleVerifyAndSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus({ type: null, message: '' });
+
+    try {
+      // Step 1: Verify OTP
+      const verifyResponse = await fetch('/api/verify-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          code: verificationCode,
+        }),
+      });
+
+      const verifyData = await verifyResponse.json();
+
+      if (!verifyResponse.ok || !verifyData.success) {
+        setSubmitStatus({
+          type: 'error',
+          message: verifyData.message || 'Invalid verification code.',
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Step 2: If verified, submit registration
+      const registerResponse = await fetch('/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -34,19 +109,21 @@ export default function Home() {
         }),
       });
 
-      const data = await response.json();
+      const registerData = await registerResponse.json();
 
-      if (response.ok) {
+      if (registerResponse.ok) {
         setSubmitStatus({
           type: 'success',
-          message: data.message || 'Thank you for pre-registering! We will be in touch soon.',
+          message: registerData.message || 'Registration successful! We will be in touch soon.',
         });
         // Reset form
         setFormData({ firstName: '', lastName: '', email: '' });
+        setVerificationCode('');
+        setStep('form');
       } else {
         setSubmitStatus({
           type: 'error',
-          message: data.error || 'Something went wrong. Please try again.',
+          message: registerData.error || 'Registration failed. Please try again.',
         });
       }
     } catch (error) {
@@ -54,10 +131,17 @@ export default function Home() {
         type: 'error',
         message: 'Network error. Please check your connection and try again.',
       });
-      console.error('Form submission error:', error);
+      console.error('Verification/Registration error:', error);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Handle going back to form
+  const handleBackToForm = () => {
+    setStep('form');
+    setVerificationCode('');
+    setSubmitStatus({ type: null, message: '' });
   };
 
   const scrollToForm = () => {
@@ -204,52 +288,87 @@ export default function Home() {
         {/* Pre-registration Form */}
         <form
           id="preRegForm"
-          onSubmit={handleSubmit}
+          onSubmit={step === 'form' ? handleSendOTP : handleVerifyAndSubmit}
           className="bg-[rgba(255,255,255,0.85)] rounded-[22px] shadow-[0_8px_32px_rgba(91,192,84,0.13),0_1.5px_8px_rgba(67,160,71,0.07)] px-6 py-10 max-w-[900px] mx-auto mt-9 mb-9 border-[2.5px] border-[rgba(91,192,84,0.10)]"
           style={{ backdropFilter: 'blur(6px)' }}
         >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div>
-              <input
-                type="text"
-                name="firstName"
-                placeholder="First Name"
-                required
-                value={formData.firstName}
-                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                className="w-full px-4 py-4 rounded-xl border-2 border-[rgba(91,192,84,0.18)] text-base bg-[rgba(255,255,255,0.7)] text-[#222] shadow-[0_1.5px_8px_rgba(91,192,84,0.07)] transition-all duration-200 focus:outline-none focus:border-[#5bc054] focus:shadow-[0_0_0_0.22rem_rgba(91,192,84,0.18),0_2px_16px_rgba(91,192,84,0.10)] focus:bg-[rgba(255,255,255,0.95)]"
-              />
-            </div>
-            <div>
-              <input
-                type="text"
-                name="lastName"
-                placeholder="Last Name"
-                required
-                value={formData.lastName}
-                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                className="w-full px-4 py-4 rounded-xl border-2 border-[rgba(91,192,84,0.18)] text-base bg-[rgba(255,255,255,0.7)] text-[#222] shadow-[0_1.5px_8px_rgba(91,192,84,0.07)] transition-all duration-200 focus:outline-none focus:border-[#5bc054] focus:shadow-[0_0_0_0.22rem_rgba(91,192,84,0.18),0_2px_16px_rgba(91,192,84,0.10)] focus:bg-[rgba(255,255,255,0.95)]"
-              />
-            </div>
-            <div>
-              <input
-                type="email"
-                name="email"
-                placeholder="Email Address"
-                required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-4 rounded-xl border-2 border-[rgba(91,192,84,0.18)] text-base bg-[rgba(255,255,255,0.7)] text-[#222] shadow-[0_1.5px_8px_rgba(91,192,84,0.07)] transition-all duration-200 focus:outline-none focus:border-[#5bc054] focus:shadow-[0_0_0_0.22rem_rgba(91,192,84,0.18),0_2px_16px_rgba(91,192,84,0.10)] focus:bg-[rgba(255,255,255,0.95)]"
-              />
-            </div>
-          </div>
+          <h3 className="text-2xl font-bold text-[#43a047] mb-6 text-center">
+            {step === 'form' ? 'Pre-register Now' : 'Verify Your Email'}
+          </h3>
+
+          {step === 'form' ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div>
+                  <input
+                    type="text"
+                    name="firstName"
+                    placeholder="First Name"
+                    required
+                    value={formData.firstName}
+                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    className="w-full px-4 py-4 rounded-xl border-2 border-[rgba(91,192,84,0.18)] text-base bg-[rgba(255,255,255,0.7)] text-[#222] shadow-[0_1.5px_8px_rgba(91,192,84,0.07)] transition-all duration-200 focus:outline-none focus:border-[#5bc054] focus:shadow-[0_0_0_0.22rem_rgba(91,192,84,0.18),0_2px_16px_rgba(91,192,84,0.10)] focus:bg-[rgba(255,255,255,0.95)]"
+                  />
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    name="lastName"
+                    placeholder="Last Name"
+                    required
+                    value={formData.lastName}
+                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    className="w-full px-4 py-4 rounded-xl border-2 border-[rgba(91,192,84,0.18)] text-base bg-[rgba(255,255,255,0.7)] text-[#222] shadow-[0_1.5px_8px_rgba(91,192,84,0.07)] transition-all duration-200 focus:outline-none focus:border-[#5bc054] focus:shadow-[0_0_0_0.22rem_rgba(91,192,84,0.18),0_2px_16px_rgba(91,192,84,0.10)] focus:bg-[rgba(255,255,255,0.95)]"
+                  />
+                </div>
+                <div>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Email Address"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full px-4 py-4 rounded-xl border-2 border-[rgba(91,192,84,0.18)] text-base bg-[rgba(255,255,255,0.7)] text-[#222] shadow-[0_1.5px_8px_rgba(91,192,84,0.07)] transition-all duration-200 focus:outline-none focus:border-[#5bc054] focus:shadow-[0_0_0_0.22rem_rgba(91,192,84,0.18),0_2px_16px_rgba(91,192,84,0.10)] focus:bg-[rgba(255,255,255,0.95)]"
+                  />
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="mb-6 text-center">
+                <p className="text-[#222] mb-4">
+                  We've sent a verification code to <strong>{formData.email}</strong>
+                </p>
+                <button
+                  type="button"
+                  onClick={handleBackToForm}
+                  className="text-[#43a047] underline text-sm hover:text-[#5bc054]"
+                >
+                  Change email
+                </button>
+              </div>
+              <div className="max-w-md mx-auto">
+                <input
+                  type="text"
+                  name="verificationCode"
+                  placeholder="Enter 6-digit code"
+                  required
+                  maxLength={6}
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ''))}
+                  className="w-full px-4 py-4 rounded-xl border-2 border-[rgba(91,192,84,0.18)] text-base bg-[rgba(255,255,255,0.7)] text-[#222] text-center text-2xl tracking-widest shadow-[0_1.5px_8px_rgba(91,192,84,0.07)] transition-all duration-200 focus:outline-none focus:border-[#5bc054] focus:shadow-[0_0_0_0.22rem_rgba(91,192,84,0.18),0_2px_16px_rgba(91,192,84,0.10)] focus:bg-[rgba(255,255,255,0.95)]"
+                />
+              </div>
+            </>
+          )}
 
           {/* Status Message */}
           {submitStatus.type && (
             <div
               className={`mb-4 p-4 rounded-lg text-center font-semibold ${submitStatus.type === 'success'
-                  ? 'bg-green-100 text-green-800 border-2 border-green-300'
-                  : 'bg-red-100 text-red-800 border-2 border-red-300'
+                ? 'bg-green-100 text-green-800 border-2 border-green-300'
+                : 'bg-red-100 text-red-800 border-2 border-red-300'
                 }`}
             >
               {submitStatus.message}
@@ -261,8 +380,8 @@ export default function Home() {
               type="submit"
               disabled={isSubmitting}
               className={`w-full md:w-[40%] bg-gradient-to-r from-[rgba(91,192,84,0.95)] to-[#43a047] text-white font-black border-none rounded-[10px] px-6 py-4 text-lg shadow-[0_4px_16px_rgba(91,192,84,0.18)] transition-all duration-200 ${isSubmitting
-                  ? 'opacity-70 cursor-not-allowed'
-                  : 'hover:bg-gradient-to-r hover:from-[#43a047] hover:to-[rgba(91,192,84,0.95)] hover:shadow-[0_8px_32px_rgba(91,192,84,0.22)] hover:-translate-y-0.5 hover:scale-[1.03]'
+                ? 'opacity-70 cursor-not-allowed'
+                : 'hover:bg-gradient-to-r hover:from-[#43a047] hover:to-[rgba(91,192,84,0.95)] hover:shadow-[0_8px_32px_rgba(91,192,84,0.22)] hover:-translate-y-0.5 hover:scale-[1.03]'
                 }`}
             >
               {isSubmitting ? (
@@ -271,10 +390,10 @@ export default function Home() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Submitting...
+                  {step === 'form' ? 'Sending...' : 'Verifying...'}
                 </span>
               ) : (
-                'Pre-register'
+                step === 'form' ? 'Send Verification Code' : 'Verify & Complete Registration'
               )}
             </button>
           </div>
