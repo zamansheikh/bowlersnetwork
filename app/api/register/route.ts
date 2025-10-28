@@ -5,8 +5,9 @@ interface RegistrationData {
     firstName: string;
     lastName: string;
     email: string;
-    timestamp?: string;
 }
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.bowlersnetwork.com';
 
 export async function POST(request: NextRequest) {
     try {
@@ -30,48 +31,51 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Add timestamp
-        const registrationData: RegistrationData = {
-            ...body,
-            timestamp: new Date().toISOString()
+        // Call the backend API with correct payload format
+        const payload = {
+            first_name: body.firstName,
+            last_name: body.lastName,
+            email: body.email,
+            is_activated: true
         };
 
-        // Log the registration (in production, you'd save this to a database)
-        console.log('New registration:', registrationData);
+        console.log('📤 Sending registration to backend:', payload);
 
-        // TODO: Save to database
-        // Example:
-        // await prisma.registration.create({
-        //   data: registrationData
-        // });
+        const response = await fetch(`${API_BASE_URL}/api/pre-register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        });
 
-        // TODO: Send confirmation email
-        // Example:
-        // await sendEmail({
-        //   to: body.email,
-        //   subject: 'Welcome to BowlersNetwork!',
-        //   html: generateWelcomeEmail(body.firstName)
-        // });
+        const data = await response.json();
 
-        // TODO: Add to mailing list (e.g., Mailchimp, SendGrid)
-        // Example:
-        // await addToMailingList(body.email, body.firstName, body.lastName);
+        if (!response.ok) {
+            console.error('❌ Backend registration failed:', data);
+            return NextResponse.json(
+                {
+                    error: data.message || 'Registration failed',
+                    details: data
+                },
+                { status: response.status }
+            );
+        }
+
+        console.log('✅ Registration successful:', data);
 
         // Return success response
         return NextResponse.json(
             {
                 success: true,
                 message: 'Registration successful! We will be in touch soon.',
-                data: {
-                    firstName: body.firstName,
-                    email: body.email
-                }
+                data: data
             },
             { status: 201 }
         );
 
     } catch (error) {
-        console.error('Registration error:', error);
+        console.error('❌ Registration error:', error);
 
         return NextResponse.json(
             {
