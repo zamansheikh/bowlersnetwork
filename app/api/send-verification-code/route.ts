@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { otpStore } from '@/lib/utils/otp-store';
 
 interface SendVerificationCodeRequest {
     email: string;
 }
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.bowlersnetwork.com';
 
 export async function POST(request: NextRequest) {
     try {
@@ -25,41 +26,34 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Generate OTP
-        const otp = otpStore.generateOTP();
+        // Call the actual backend API
+        const response = await fetch(`${API_BASE_URL}/api/send-verification-code`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: body.email
+            })
+        });
 
-        // Store OTP
-        otpStore.set(body.email, otp);
+        const data = await response.json();
 
-        // Log OTP (in development only - in production, send via email)
-        console.log(`\n🔐 OTP for ${body.email}: ${otp}`);
-        console.log(`   Expires in 5 minutes\n`);
+        if (!response.ok) {
+            return NextResponse.json(
+                {
+                    error: data.error || data.message || 'Failed to send verification code'
+                },
+                { status: response.status }
+            );
+        }
 
-        // TODO: Send OTP via email service
-        // Example with Resend:
-        // await resend.emails.send({
-        //   from: 'BowlersNetwork <noreply@bowlersnetwork.com>',
-        //   to: body.email,
-        //   subject: 'Your Verification Code',
-        //   html: `<p>Your verification code is: <strong>${otp}</strong></p>
-        //          <p>This code will expire in 5 minutes.</p>`
-        // });
-
-        // Example with SendGrid:
-        // await sgMail.send({
-        //   to: body.email,
-        //   from: 'noreply@bowlersnetwork.com',
-        //   subject: 'Your Verification Code',
-        //   text: `Your verification code is: ${otp}. This code will expire in 5 minutes.`,
-        //   html: `<p>Your verification code is: <strong>${otp}</strong></p>
-        //          <p>This code will expire in 5 minutes.</p>`
-        // });
+        // Log success (for debugging)
+        console.log(`✅ Verification code sent to: ${body.email}`);
 
         return NextResponse.json(
             {
-                message: 'Verification code sent successfully',
-                // In development, return the OTP (REMOVE IN PRODUCTION!)
-                ...(process.env.NODE_ENV === 'development' && { debug_otp: otp })
+                message: data.message || 'Verification code sent successfully'
             },
             { status: 200 }
         );

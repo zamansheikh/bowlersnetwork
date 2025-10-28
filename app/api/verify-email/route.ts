@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { otpStore } from '@/lib/utils/otp-store';
 
 interface VerifyEmailRequest {
     email: string;
     code: string;
-}export async function POST(request: NextRequest) {
+}
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://test.bowlersnetwork.com';
+
+export async function POST(request: NextRequest) {
     try {
         const body: VerifyEmailRequest = await request.json();
 
@@ -30,38 +33,36 @@ interface VerifyEmailRequest {
             );
         }
 
-        // Get stored OTP data
-        const storedData = otpStore.get(body.email);
+        // Call the actual backend API
+        const response = await fetch(`${API_BASE_URL}/api/verify-email`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: body.email,
+                code: body.code
+            })
+        });
 
-        // Check if OTP exists or is expired
-        if (!storedData) {
+        const data = await response.json();
+
+        if (!response.ok) {
             return NextResponse.json(
                 {
                     success: false,
-                    message: 'Verification code not found or expired. Please request a new code.'
+                    message: data.message || data.error || 'Invalid verification code'
                 },
-                { status: 400 }
+                { status: response.status }
             );
         }
 
-        // Verify OTP
-        if (!otpStore.isValid(body.email, body.code)) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    message: 'Invalid verification code. Please try again.'
-                },
-                { status: 400 }
-            );
-        }
-
-        // OTP verified successfully - remove from store
-        otpStore.delete(body.email); console.log(`✅ Email verified successfully: ${body.email}`);
+        console.log(`✅ Email verified successfully: ${body.email}`);
 
         return NextResponse.json(
             {
-                success: true,
-                message: 'Email verified successfully'
+                success: data.success !== false,
+                message: data.message || 'Email verified successfully'
             },
             { status: 200 }
         );

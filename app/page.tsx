@@ -41,14 +41,8 @@ export default function Home() {
         setStep('verify');
         setSubmitStatus({
           type: 'success',
-          message: data.message || 'Verification code sent to your email!',
+          message: data.message || 'Verification code sent to your email! Please check your inbox.',
         });
-
-        // Show debug OTP in development
-        if (data.debug_otp) {
-          console.log('🔐 Debug OTP:', data.debug_otp);
-          alert(`Development Mode - Your OTP is: ${data.debug_otp}`);
-        }
       } else {
         setSubmitStatus({
           type: 'error',
@@ -211,15 +205,22 @@ export default function Home() {
 
         {/* Header Content */}
         <div className="relative z-10 text-center text-white px-4 py-10">
-          <div className="mb-5">
-            <Image
-              src="/images/bn_logo_big.png"
-              alt="BowlersNetwork Logo"
-              width={170}
-              height={170}
-              className="rounded-full border-4 border-white shadow-[0_2px_12px_rgba(91,192,84,0.18)] bg-white object-cover mx-auto"
-              style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.12))' }}
-            />
+          <div className="mb-5 flex justify-center">
+            <div className="relative w-[170px] h-[170px]">
+              <Image
+                src="/images/bn_logo_big.png"
+                alt="BowlersNetwork Logo"
+                width={170}
+                height={170}
+                className="rounded-full border-4 border-white shadow-[0_2px_12px_rgba(91,192,84,0.18)] bg-white"
+                style={{
+                  filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.12))',
+                  objectFit: 'cover',
+                  width: '100%',
+                  height: '100%'
+                }}
+              />
+            </div>
           </div>
           <h1 className="text-5xl font-black tracking-wider mb-3 text-white" style={{ textShadow: '0 2px 16px rgba(67,160,71,0.18)' }}>
             Your Game. Your Network.
@@ -252,13 +253,20 @@ export default function Home() {
                 key={index}
                 className="bg-white rounded-2xl px-5 py-6 max-w-[300px] min-w-[220px] text-[#222] shadow-[0_2px_16px_rgba(91,192,84,0.10)] border-2 border-[rgba(91,192,84,0.10)] opacity-90 transition-all duration-[400ms] hover:opacity-100 hover:-translate-y-2 hover:scale-105"
               >
-                <Image
-                  src={testimonial.image}
-                  alt={testimonial.name}
-                  width={56}
-                  height={56}
-                  className="rounded-full mb-3 border-[2.5px] border-[rgba(91,192,84,0.35)] object-cover mx-auto"
-                />
+                <div className="relative w-[56px] h-[56px] mx-auto mb-3">
+                  <Image
+                    src={testimonial.image}
+                    alt={testimonial.name}
+                    width={56}
+                    height={56}
+                    className="rounded-full border-[2.5px] border-[rgba(91,192,84,0.35)]"
+                    style={{
+                      objectFit: 'cover',
+                      width: '100%',
+                      height: '100%'
+                    }}
+                  />
+                </div>
                 <div className="text-sm mb-3 leading-relaxed">{testimonial.quote}</div>
                 <div className="font-bold mt-2 text-[#5bc054]">{testimonial.name}</div>
               </div>
