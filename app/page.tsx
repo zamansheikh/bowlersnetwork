@@ -52,6 +52,52 @@ export default function Home() {
         setTimeout(() => {
           setSnackbar({ show: false, message: '' });
         }, 2000);
+      } else if (data.error && data.error.includes('already verified')) {
+        // Email is already verified, proceed directly to registration
+        try {
+          const registerResponse = await fetch('/api/register', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              firstName: formData.firstName,
+              lastName: formData.lastName,
+              email: formData.email,
+            }),
+          });
+
+          const registerData = await registerResponse.json();
+
+          if (registerResponse.ok) {
+            // Show snackbar notification that auto-dismisses
+            setSnackbar({
+              show: true,
+              message: registerData.message || 'Registration successful! We will be in touch soon.',
+            });
+            // Auto-dismiss after 2 seconds
+            setTimeout(() => {
+              setSnackbar({ show: false, message: '' });
+            }, 2000);
+            // Reset form
+            setFormData({ firstName: '', lastName: '', email: '' });
+            setVerificationCode('');
+            setStep('form');
+          } else {
+            // Display exact error from backend (handle nested error structure)
+            const errorMessage = registerData.details?.error || registerData.error || registerData.message || 'Registration failed. Please try again.';
+            setSubmitStatus({
+              type: 'error',
+              message: errorMessage,
+            });
+          }
+        } catch (error) {
+          setSubmitStatus({
+            type: 'error',
+            message: 'Network error during registration. Please try again.',
+          });
+          console.error('Registration error:', error);
+        }
       } else {
         setSubmitStatus({
           type: 'error',
@@ -129,17 +175,19 @@ export default function Home() {
         setVerificationCode('');
         setStep('form');
       } else {
+        // Display exact error from backend (handle nested error structure)
+        const errorMessage = registerData.details?.error || registerData.error || registerData.message || 'Registration failed. Please try again.';
         setSubmitStatus({
           type: 'error',
-          message: registerData.error || 'Registration failed. Please try again.',
+          message: errorMessage,
         });
       }
     } catch (error) {
       setSubmitStatus({
         type: 'error',
-        message: 'Network error. Please check your connection and try again.',
+        message: 'Network error during registration. Please try again.',
       });
-      console.error('Verification/Registration error:', error);
+      console.error('Registration error:', error);
     } finally {
       setIsSubmitting(false);
     }
