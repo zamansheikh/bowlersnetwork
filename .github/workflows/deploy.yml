@@ -1,0 +1,41 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy to VPS
+        run: |
+          ssh -o StrictHostKeyChecking=no root@31.97.135.175 "
+            export PATH=\$PATH:/root/.bun/bin &&  # Existing for Bun
+            export PATH=/root/.nvm/versions/node/v20.19.5/bin:\$PATH &&  # Add this for Node 20 (replace with your path)
+            if [ ! -d /var/www/bowlersnetwork ]; then
+              mkdir -p /var/www/bowlersnetwork &&
+              GIT_SSH_COMMAND=\"ssh -i ~/.ssh/id_ed25519_deploy\" git clone git@github.com:yourusername/bowlersnetwork.git /var/www/bowlersnetwork
+            fi &&
+            cd /var/www/bowlersnetwork &&
+            git stash &&
+            GIT_SSH_COMMAND=\"ssh -i ~/.ssh/id_ed25519_deploy\" git pull origin main &&
+            bun install &&
+            bun run build &&
+            if tmux has-session -t bowlersnetwork 2>/dev/null; then
+              echo \"Already session running: bowlersnetwork. Killing it...\"
+              tmux kill-session -t bowlersnetwork
+            fi &&
+            echo \"Starting new session: bowlersnetwork\" &&
+            tmux new-session -d -s bowlersnetwork 'bun run start' &&
+            echo \"Successfully started 'bun run start' in tmux session bowlersnetwork\" 
+          "
