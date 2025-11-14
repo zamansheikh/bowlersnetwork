@@ -24,7 +24,8 @@ jobs:
             export PATH=/root/.nvm/versions/node/v20.19.5/bin:\$PATH &&  # Add this for Node 20 (replace with your path)
             if [ ! -d /var/www/bowlersnetwork ]; then
               mkdir -p /var/www/bowlersnetwork &&
-              GIT_SSH_COMMAND=\"ssh -i ~/.ssh/id_ed25519_deploy\" git clone git@github.com:zamansheikh/bowlersnetwork.git /var/www/bowlersnetwork
+              cd /var/www/bowlersnetwork &&
+              GIT_SSH_COMMAND=\"ssh -i ~/.ssh/id_ed25519_deploy\" git clone git@github.com:zamansheikh/bowlersnetwork.git .
             fi &&
             cd /var/www/bowlersnetwork &&
             git stash &&
