@@ -295,6 +295,12 @@ export default function Home() {
 
       {/* Main Container */}
       <div className="max-w-[1000px] mx-auto -mt-[60px] bg-white rounded-[22px] shadow-[0_8px_32px_rgba(91,192,84,0.18)] px-8 py-10 relative text-center text-[#4a5b4e]">
+        {/* NOTE: Pre-registration is currently disabled */}
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded">
+          <p className="text-yellow-800 font-semibold">⚠️ Pre-registration is currently offline</p>
+          <p className="text-yellow-700 text-sm">We&apos;re working on improvements. Please check back soon!</p>
+        </div>
+
         <p className="text-lg mb-6 leading-relaxed">
           Pre-register today to be among the first to experience the most connected platform the sport has ever seen — and become eligible for our exclusive beta testing group.
         </p>
@@ -408,7 +414,7 @@ export default function Home() {
             <>
               <div className="mb-6 text-center">
                 <p className="text-[#222] mb-4">
-                  We've sent a verification code to <strong>{formData.email}</strong>
+                  We&apos;ve sent a verification code to <strong>{formData.email}</strong>
                 </p>
                 <button
                   type="button"
