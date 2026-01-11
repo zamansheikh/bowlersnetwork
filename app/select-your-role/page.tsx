@@ -63,7 +63,7 @@ export default function SelectYourRole() {
         window.location.href = 'https://beta.bowlersnetwork.com/signin';
       } else if (selectedRole === 'pro-player') {
         // Redirect to another website in the same tab
-        window.location.href = 'https://pros.bowlersnetwork.com/';
+        window.location.href = 'https://pros.bowlersnetwork.com/signin';
       } else if (selectedRole === 'bowling-center') {
         setComingSoonRole('Bowling Center');
         setShowComingSoon(true);

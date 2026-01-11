@@ -418,7 +418,7 @@ export default function Landing2Page() {
                                 Built for<br />Every<br />Bowler
                             </h2>
                             <p className="text-sm md:text-base font-semibold text-gray-800 leading-relaxed">
-                                Whether you're rolling your first ball, chasing a pro title, running a center, or stocking the shelves — Bowlers Network connects the whole bowling world.
+                                Whether you&apos;re rolling your first ball, chasing a pro title, running a center, or stocking the shelves — Bowlers Network connects the whole bowling world.
                             </p>
                         </div>
                     </div>
@@ -615,7 +615,7 @@ export default function Landing2Page() {
                                     <span className="text-green-600 font-bold text-lg">•</span>
                                     <div>
                                         <span className="font-bold text-gray-900">Beyond Following:</span>
-                                        <span className="text-gray-700"> Don't just follow... collect, trade, and showcase cards in the community.</span>
+                                        <span className="text-gray-700"> Don&apos;t just follow... collect, trade, and showcase cards in the community.</span>
                                     </div>
                                 </li>
                                 <li className="flex items-start gap-3">
@@ -761,7 +761,7 @@ export default function Landing2Page() {
                         {/* Right Side: Text & Buttons */}
                         <div className="flex-1 bg-white rounded-3xl p-6 md:p-10 flex flex-col justify-center shadow-xl">
                             <p className="text-gray-700 text-lg leading-relaxed mb-10">
-                                Streamline your center's operations and elevate the bowler experience with tools built to drive efficiency and growth.
+                                Streamline your center&apos;s operations and elevate the bowler experience with tools built to drive efficiency and growth.
                             </p>
 
                             <div className="flex flex-col gap-4">
@@ -1070,7 +1070,7 @@ export default function Landing2Page() {
 
                             {/* Subheading */}
                             <p className="text-base md:text-lg text-gray-600 mb-8">
-                                We're on a mission to unite the bowling world — from amateurs and pros to centers and brands — through technology, community, and innovation.
+                                We&apos;re on a mission to unite the bowling world — from amateurs and pros to centers and brands — through technology, community, and innovation.
                             </p>
 
                             {/* Mission and Vision Cards */}
