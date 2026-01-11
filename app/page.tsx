@@ -2,10 +2,25 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { UserCircle, TrendingUp, Link as LucideLink, Calendar, MapPin, X, Menu } from 'lucide-react';
+import { TrendingUp, Link as LucideLink, Calendar, MapPin, X, Menu } from 'lucide-react';
 import Link from 'next/link';
 // import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+
+// Minimal Mapbox types to avoid explicit `any` and satisfy eslint
+type MapboxControl = Record<string, unknown>;
+
+type MapInstance = {
+  addControl: (control: MapboxControl, position?: string) => void;
+  remove: () => void;
+};
+
+type MapboxGL = {
+  accessToken?: string;
+  Map: new (opts: { container: string | HTMLElement; style: string; center: [number, number]; zoom: number; attributionControl?: boolean }) => MapInstance;
+  NavigationControl: new () => MapboxControl;
+  Marker: new (opts?: { color?: string }) => { setLngLat: (coords: [number, number]) => { addTo: (map: MapInstance) => void } };
+};
 
 export default function Landing2Page() {
     const menuItems = [
@@ -22,7 +37,7 @@ export default function Landing2Page() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [selectedMember, setSelectedMember] = useState<BoardMember | null>(null);
     const [brands, setBrands] = useState<Brand[]>([]);
-    const mapRef = useRef<any>(null);
+const mapRef = useRef<MapInstance | null>(null);
     const [mapLoaded, setMapLoaded] = useState(false);
     // const { user } = useAuth();
     const user = { authenticated: false };
@@ -83,13 +98,14 @@ export default function Landing2Page() {
     useEffect(() => {
         const initializeMap = () => {
             const mapContainer = document.getElementById('contact-map');
-            if (!(window as any).mapboxgl || mapRef.current || !mapContainer) return;
+            const mapboxgl = (window as unknown as { mapboxgl?: MapboxGL }).mapboxgl;
+            if (!mapboxgl || mapRef.current || !mapContainer) return;
 
             // Use the token from env or fallback to a known public token for this project
             const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || 'pk.eyJ1IjoiamF5ZmV0dGlnIiwiYSI6ImNtY3Q3MmswNzAyOWQybHBwaDlzeXJmanIifQ.iaiqh6-04UjJcwPKrOqoXw';
-            (window as any).mapboxgl.accessToken = mapboxToken;
+            mapboxgl.accessToken = mapboxToken;
             
-            const map = new (window as any).mapboxgl.Map({
+            const map = new mapboxgl.Map({
                 container: 'contact-map',
                 style: 'mapbox://styles/mapbox/light-v11',
                 center: [-82.5158, 40.7589], // Mansfield, OH (Main St & Park Ave)
@@ -98,10 +114,10 @@ export default function Landing2Page() {
             });
 
             // Add navigation controls
-            map.addControl(new (window as any).mapboxgl.NavigationControl(), 'bottom-right');
+            map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
 
             // Add marker
-            new (window as any).mapboxgl.Marker({ color: '#86D864' })
+            new mapboxgl.Marker({ color: '#86D864' })
                 .setLngLat([-82.5158, 40.7589])
                 .addTo(map);
 
@@ -109,7 +125,9 @@ export default function Landing2Page() {
             setMapLoaded(true);
         };
 
-        if (!(window as any).mapboxgl) {
+
+
+        if (!(window as unknown as { mapboxgl?: MapboxGL }).mapboxgl) {
             // Load script
             const script = document.createElement('script');
             script.src = 'https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js';
