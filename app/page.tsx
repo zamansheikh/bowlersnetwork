@@ -573,7 +573,7 @@ const mapRef = useRef<MapInstance | null>(null);
                     {/* Left Side: Text Content */}
                     <div className="flex flex-col items-center md:items-start justify-center w-full md:w-1/2 pl-4 md:pl-12 lg:pl-20 pr-4 md:pr-8 text-center md:text-left">
                         <h2 className="text-4xl md:text-6xl font-medium text-white leading-tight mb-4 tracking-tight">
-                            Every Bowler<br />Is a Card
+                            Every Bowler Creates a<br /> Trading Card
                         </h2>
                         <p className="text-sm md:text-base text-white/90 mb-6 leading-relaxed max-w-sm md:max-w-md">
                             Your stats. Your journey. Your legacy — collected, traded, and showcased.
