@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { TrendingUp, Link as LucideLink, Calendar, MapPin, X, Menu } from 'lucide-react';
+import { TrendingUp, Link as LucideLink, Calendar, MapPin, X, Menu, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
 import Link from 'next/link';
 // import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -435,7 +435,7 @@ const mapRef = useRef<MapInstance | null>(null);
                                 Built for<br />Every<br />Bowler
                             </h2>
                             <p className="text-sm md:text-base font-semibold text-gray-800 leading-relaxed">
-                                Whether you&apos;re rolling your first ball, chasing a pro title, running a center, or stocking the shelves — Bowlers Network connects the whole bowling world.
+                                Whether you&apos;re rolling your first ball, chasing a pro title, running a center, or stocking the shelves — BowlersNetwork connects the whole bowling world.
                             </p>
                         </div>
                     </div>
@@ -446,7 +446,7 @@ const mapRef = useRef<MapInstance | null>(null);
             <section className="py-12 md:py-20 px-4 md:px-8 bg-white">
                 <div className="max-w-7xl mx-auto text-center">
                     <h2 className="text-3xl md:text-5xl font-black text-black">
-                        All-in-OneBowling Experience
+                        All-in-One Bowling Experience
                     </h2>
                     <p className="mt-4 text-base md:text-xl text-gray-700 max-w-2xl mx-auto">
                         From casual play to pro competition — every feature you need, in one
@@ -692,7 +692,7 @@ const mapRef = useRef<MapInstance | null>(null);
                                 </svg>
                             </div>
                             <h3 className="text-xl font-bold text-gray-900 mb-3">
-                                Manage Your Pro Profile
+                                Manage Your Profile
                             </h3>
                             <p className="text-gray-600 leading-relaxed">
                                 Showcase your story, stats, and highlights.
@@ -1050,7 +1050,7 @@ const mapRef = useRef<MapInstance | null>(null);
                         </div>
 
                         {/* Right: Image */}
-                        <div className="md:col-span-7 relative h-[300px] md:h-[600px]">
+                        <div className="md:col-span-7 relative h-[300px] md:h-[470px]">
                             <Image
                                 src="/land2_opt/20.webp"
                                 unoptimized
@@ -1096,7 +1096,7 @@ const mapRef = useRef<MapInstance | null>(null);
                                 <div className="bg-green-50 rounded-xl p-6">
                                     <h3 className="text-gray-900 font-black text-lg mb-3">Our Mission</h3>
                                     <p className="text-gray-700 text-sm mb-4">
-                                        Founded by passionate bowlers, Bowlers Network began with a simple vision: to transform every lane into a connected experience.
+                                        Founded by passionate bowlers, BowlersNetwork began with a simple vision: to transform every lane into a connected experience.
                                     </p>
                                     <a href="#" className="text-[#86D864] font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all">
                                         Read More <span>›</span>
@@ -1107,7 +1107,7 @@ const mapRef = useRef<MapInstance | null>(null);
                                 <div className="bg-blue-50 rounded-xl p-6">
                                     <h3 className="text-gray-900 font-black text-lg mb-3">Our Vision</h3>
                                     <p className="text-gray-700 text-sm mb-4">
-                                        Founded by passionate bowlers, Bowlers Network began with a simple vision: to transform every lane into a connected experience.
+                                        Founded by passionate bowlers, BowlersNetwork began with a simple vision: to transform every lane into a connected experience.
                                     </p>
                                     <a href="#" className="text-[#86D864] font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all">
                                         Read More <span>›</span>
@@ -1119,7 +1119,7 @@ const mapRef = useRef<MapInstance | null>(null);
                             <div className="bg-gray-100 rounded-xl p-6">
                                 <h3 className="text-gray-900 font-black text-lg mb-3">Our Story</h3>
                                 <p className="text-gray-700 text-sm mb-4">
-                                    Founded by passionate bowlers, Bowlers Network began with a simple vision: to transform every lane into a connected experience. What started with a single lane and a big dream has grown into a platform that brings together players, centers, pros, and brands.
+                                    Founded by passionate bowlers, BowlersNetwork began with a simple vision: to transform every lane into a connected experience. What started with a single lane and a big dream has grown into a platform that brings together players, centers, pros, and brands.
                                 </p>
                                 <a href="#" className="text-[#86D864] font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all">
                                     Read More <span>›</span>
@@ -1184,20 +1184,37 @@ const mapRef = useRef<MapInstance | null>(null);
                             <div className="mb-8 md:mb-0">
                                 <p className="text-gray-900 font-black text-xs mb-4 tracking-widest">FOLLOW US</p>
                                 <div className="flex items-center gap-6">
-                                    <a href="#" className="text-gray-900 hover:text-[#86D864] transition-colors text-2xl">
-                                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 0C5.372 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.6.111.82-.261.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C3.422 17.8 2.633 17.376 2.633 17.376c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.237 1.838 1.237 1.07 1.834 2.809 1.304 3.495.997.108-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222 0 1.604-.015 2.896-.015 3.286 0 .319.216.694.824.576C20.565 21.795 24 17.295 24 12c0-6.627-5.373-12-12-12z" />
-                                        </svg>
+                                    <a 
+                                        href="https://www.facebook.com/BowlersNetwork" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className="text-gray-900 hover:text-[#86D864] transition-colors"
+                                    >
+                                        <Facebook size={24} />
                                     </a>
-                                    <a href="#" className="text-gray-900 hover:text-[#86D864] transition-colors text-2xl">
-                                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm3.5 8.5h-2c-.276 0-.5.224-.5.5v2h2.5l-.5 2h-2v7h-2v-7H9v-2h1.5V8.5c0-1.38 1.12-2.5 2.5-2.5h2v2z" />
-                                        </svg>
+                                    <a 
+                                        href="https://www.instagram.com/bowlers_network" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className="text-gray-900 hover:text-[#86D864] transition-colors"
+                                    >
+                                        <Instagram size={24} />
                                     </a>
-                                    <a href="#" className="text-gray-900 hover:text-[#86D864] transition-colors text-2xl">
-                                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2s9 5 20 5a9.5 9.5 0 00-9-5.5c4.75 2.25 7-7 7-7a10.6 10.6 0 01-3 1z" />
-                                        </svg>
+                                    <a 
+                                        href="https://x.com/bowlersnetwork" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className="text-gray-900 hover:text-[#86D864] transition-colors"
+                                    >
+                                        <Twitter size={24} />
+                                    </a>
+                                    <a 
+                                        href="https://youtube.com/@bowlersnetworkinc" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className="text-gray-900 hover:text-[#86D864] transition-colors"
+                                    >
+                                        <Youtube size={24} />
                                     </a>
                                 </div>
                             </div>
