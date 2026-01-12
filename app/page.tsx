@@ -69,20 +69,19 @@ const mapRef = useRef<MapInstance | null>(null);
                 const response = await fetch('https://test.bowlersnetwork.com/api/brands');
                 const data = await response.json();
 
+                // Only show Business Sponsors for the trusted partners section
                 let brandData: Brand[] = [];
-                if (data.Shoes && Array.isArray(data.Shoes)) {
-                    // Combine specific categories or just show Business Sponsors as partners
-                    brandData = [
-                        ...(data['Business Sponsors'] || []),
-                        ...(data['Balls'] || []),
-                        ...(data['Apparels'] || [])
-                    ].slice(0, 12); // Show a reasonable number
-                } else if (data.data && Array.isArray(data.data)) {
-                    brandData = data.data;
-                } else if (data.brands && Array.isArray(data.brands)) {
-                    brandData = data.brands;
+
+                const payload = data as Record<string, unknown>;
+                const businessValue = payload['Business Sponsors'] ?? payload['businessSponsors'];
+                if (Array.isArray(businessValue)) {
+                    brandData = (businessValue as Brand[]);
+                } else if (Array.isArray(payload.data)) {
+                    brandData = (payload.data as Brand[]).filter(b => b.brandType === 'Business Sponsors');
+                } else if (Array.isArray(payload.brands)) {
+                    brandData = (payload.brands as Brand[]).filter(b => b.brandType === 'Business Sponsors');
                 } else if (Array.isArray(data)) {
-                    brandData = data;
+                    brandData = (data as Brand[]).filter(b => b.brandType === 'Business Sponsors');
                 }
 
                 setBrands(brandData);
