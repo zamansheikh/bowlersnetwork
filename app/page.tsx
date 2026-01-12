@@ -24,11 +24,11 @@ type MapboxGL = {
 
 export default function Landing2Page() {
     const menuItems = [
-        { label: 'AMATEURS', href: '/amateurs' },
-        { label: 'PROS', href: '/pro-players' },
-        { label: 'CENTERS', href: '/centers' },
-        { label: 'PARTNERS', href: '/partners' },
-        { label: 'ABOUT US', href: '/about' },
+        { label: 'AMATEURS', href: '#all-in-one' },
+        { label: 'PROS', href: '#beyond-the-chatter' },
+        { label: 'CENTERS', href: '#smarter-centers' },
+        { label: 'PARTNERS', href: '#trusted-partners' },
+        { label: 'ABOUT US', href: '#about-us' },
     ];
 
     /* BoardMember and Brand interfaces omitted for brevity */
@@ -443,7 +443,7 @@ const mapRef = useRef<MapInstance | null>(null);
             </section>
 
             {/* All-in-OneBowling Experience Section */}
-            <section className="py-12 md:py-20 px-4 md:px-8 bg-white">
+            <section id="all-in-one" className="py-12 md:py-20 px-4 md:px-8 bg-white scroll-mt-24">
                 <div className="max-w-7xl mx-auto text-center">
                     <h2 className="text-3xl md:text-5xl font-black text-black">
                         All-in-One Bowling Experience
@@ -661,7 +661,7 @@ const mapRef = useRef<MapInstance | null>(null);
             </section>
 
             {/* Beyond the Chatter — Build Your Brand Section */}
-            <section className="py-12 md:py-20 px-4 md:px-8 bg-gray-50">
+            <section id="beyond-the-chatter" className="py-12 md:py-20 px-4 md:px-8 bg-gray-50 scroll-mt-24">
                 <div className="max-w-7xl mx-auto text-center">
                     <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
                         Beyond the Chatter — Build Your Brand
@@ -748,7 +748,7 @@ const mapRef = useRef<MapInstance | null>(null);
             </section>
 
             {/* Smarter Centers Section */}
-            <section className="relative py-12 md:py-24 px-4 md:px-8 overflow-hidden rounded-3xl mx-4 md:mx-8 mb-8 md:mb-12">
+            <section id="smarter-centers" className="relative py-12 md:py-24 px-4 md:px-8 overflow-hidden rounded-3xl mx-4 md:mx-8 mb-8 md:mb-12 scroll-mt-24">
                 {/* Background Image */}
                 <div className="absolute inset-0 z-0 rounded-3xl overflow-hidden">
                     <Image
@@ -1283,7 +1283,7 @@ const mapRef = useRef<MapInstance | null>(null);
             </section>
 
             {/* Trusted Partners Section */}
-            <section className="py-12 md:py-20 px-4 md:px-8 bg-white">
+            <section id="trusted-partners" className="py-12 md:py-20 px-4 md:px-8 bg-white scroll-mt-24">
                 <div className="max-w-7xl mx-auto">
                     {/* Header */}
                     <div className="text-center mb-12 md:mb-16">
@@ -1326,7 +1326,7 @@ const mapRef = useRef<MapInstance | null>(null);
             </section>
 
             {/* The People Behind The Network Section */}
-            <section className="py-12 md:py-20 px-4 md:px-8 bg-white">
+            <section id="about-us" className="py-12 md:py-20 px-4 md:px-8 bg-white scroll-mt-24">
                 <div className="max-w-7xl mx-auto">
                     {/* Header */}
                     <div className="text-center mb-12 md:mb-16">
