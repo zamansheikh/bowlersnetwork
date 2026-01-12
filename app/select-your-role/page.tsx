@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -11,15 +11,20 @@ interface Role {
   id: string;
   title: string;
   description: string;
-  badge: string;
-  badgeColor: string;
 }
 
 export default function SelectYourRole() {
-  const [selectedRole, setSelectedRole] = useState<string>('amateur');
+  const [selectedRole, setSelectedRole] = useState<string>('');
   const [showComingSoon, setShowComingSoon] = useState(false);
   const [comingSoonRole, setComingSoonRole] = useState<string>('');
+  const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    if (redirectUrl) {
+      window.location.href = redirectUrl;
+    }
+  }, [redirectUrl]);
 
   const roles: Role[] = [
     {
@@ -27,50 +32,41 @@ export default function SelectYourRole() {
       title: "Amateur",
       description:
         "The Amateur Player is a standard user role designed for recreational and league bowlers. This role emphasizes engagement, progression, and community interaction through XP-based activities and trading card customization.",
-      badge: "Free",
-      badgeColor: "bg-green-100 text-green-800",
     },
     {
       id: "pro-player",
       title: "Pro Player",
       description:
         "The Amateur Player is a standard user role designed for recreational and league bowlers. This role emphasizes engagement, progression, and community interaction through XP-based activities and trading card customization.",
-      badge: "Premium",
-      badgeColor: "bg-blue-100 text-blue-800",
     },
     {
       id: "bowling-center",
       title: "Bowling Center",
       description:
         "The Amateur Player is a standard user role designed for recreational and league bowlers. This role emphasizes engagement, progression, and community interaction through XP-based activities and trading card customization.",
-      badge: "Premium",
-      badgeColor: "bg-blue-100 text-blue-800",
     },
     {
       id: "manufacturer",
       title: "Manufacturer",
       description:
         "The Amateur Player is a standard user role designed for recreational and league bowlers. This role emphasizes engagement, progression, and community interaction through XP-based activities and trading card customization.",
-      badge: "Premium",
-      badgeColor: "bg-blue-100 text-blue-800",
     },
   ];
 
-  const handleContinue = () => {
-    if (selectedRole) {
-      if (selectedRole === 'amateur') {
-        // Redirect to external beta site
-        window.location.href = 'https://beta.bowlersnetwork.com/signin';
-      } else if (selectedRole === 'pro-player') {
-        // Redirect to another website in the same tab
-        window.location.href = 'https://pros.bowlersnetwork.com/signin';
-      } else if (selectedRole === 'bowling-center') {
-        setComingSoonRole('Bowling Center');
-        setShowComingSoon(true);
-      } else if (selectedRole === 'manufacturer') {
-        setComingSoonRole('Manufacturer');
-        setShowComingSoon(true);
-      }
+  const handleRoleSelect = (roleId: string) => {
+    setSelectedRole(roleId);
+    if (roleId === 'amateur') {
+      // Set redirect URL to be handled by useEffect
+      setRedirectUrl('https://beta.bowlersnetwork.com/signin');
+    } else if (roleId === 'pro-player') {
+      // Set redirect URL to be handled by useEffect
+      setRedirectUrl('https://pros.bowlersnetwork.com/signin');
+    } else if (roleId === 'bowling-center') {
+      setComingSoonRole('Bowling Center');
+      setShowComingSoon(true);
+    } else if (roleId === 'manufacturer') {
+      setComingSoonRole('Manufacturer');
+      setShowComingSoon(true);
     }
   };
 
@@ -102,7 +98,7 @@ export default function SelectYourRole() {
           {roles.map((role) => (
             <div
               key={role.id}
-              onClick={() => setSelectedRole(role.id)}
+              onClick={() => handleRoleSelect(role.id)}
               className={`
                 relative p-6 rounded-2xl border-2 transition-all cursor-pointer hover:shadow-lg
                 ${selectedRole === role.id 
@@ -111,10 +107,7 @@ export default function SelectYourRole() {
                 }
               `}
             >
-              <div className="flex justify-between items-start mb-4">
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${role.badgeColor}`}>
-                  {role.badge}
-                </span>
+              <div className="flex justify-end items-start mb-4">
                 <div className={`
                   w-6 h-6 rounded-full border-2 flex items-center justify-center
                   ${selectedRole === role.id ? "border-green-500" : "border-gray-300"}
@@ -128,17 +121,6 @@ export default function SelectYourRole() {
               <p className="text-sm text-gray-600 leading-relaxed">{role.description}</p>
             </div>
           ))}
-        </div>
-
-        {/* Action Button */}
-        <div className="flex justify-center">
-          <button
-            onClick={handleContinue}
-            className="w-full md:w-auto px-12 py-4 bg-green-500 text-white font-bold rounded-full text-lg shadow-lg hover:bg-green-600 transition-colors transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!selectedRole}
-          >
-            Continue
-          </button>
         </div>
       </div>
 
