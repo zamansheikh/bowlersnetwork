@@ -30,27 +30,27 @@ export default function SelectYourRole() {
     {
       id: "amateur",
       title: "Amateur",
-      description:
-        "The Amateur Player is a standard user role designed for recreational and league bowlers. This role emphasizes engagement, progression, and community interaction through XP-based activities and trading card customization.",
-    },
+       description:
+        "The standard user role for recreational and league bowlers. Track your progress, connect with the community, and build your digital presence through XP and trading cards."
+      },
     {
       id: "pro-player",
       title: "Pro Player",
       description:
-        "The Amateur Player is a standard user role designed for recreational and league bowlers. This role emphasizes engagement, progression, and community interaction through XP-based activities and trading card customization.",
-    },
+        "Exclusive role for professional bowlers. Manage your fan base, showcase your tournament schedule, share professional insights, and engage with the bowling community at a higher level."
+      },
     {
       id: "bowling-center",
       title: "Bowling Center",
       description:
-        "The Amateur Player is a standard user role designed for recreational and league bowlers. This role emphasizes engagement, progression, and community interaction through XP-based activities and trading card customization.",
-    },
+        "For owners and operators. Increase center visibility, manage tournaments and events, host lane exchanges, and offer exclusive perks to players who visit your facility."
+      },
     {
       id: "manufacturer",
       title: "Manufacturer",
       description:
-        "The Amateur Player is a standard user role designed for recreational and league bowlers. This role emphasizes engagement, progression, and community interaction through XP-based activities and trading card customization.",
-    },
+        "For bowling equipment brands. Showcase your latest products, manage staff players, sponsor tournaments, and connect directly with players looking for the best gear."
+     },
   ];
 
   const handleRoleSelect = (roleId: string) => {
