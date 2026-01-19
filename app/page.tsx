@@ -34,6 +34,7 @@ export default function Landing2Page() {
     /* BoardMember and Brand interfaces omitted for brevity */
 
     const [modalOpen, setModalOpen] = useState(false);
+    const [betaModalOpen, setBetaModalOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [selectedMember, setSelectedMember] = useState<BoardMember | null>(null);
     const [brands, setBrands] = useState<Brand[]>([]);
@@ -184,6 +185,8 @@ const mapRef = useRef<MapInstance | null>(null);
 
     const openModal = (member: BoardMember) => { setSelectedMember(member); setModalOpen(true); };
     const closeModal = () => { setModalOpen(false); setSelectedMember(null); };
+    const openBetaModal = () => { setBetaModalOpen(true); };
+    const closeBetaModal = () => { setBetaModalOpen(false); };
 
     const handleProfileClick = () => {
         if (user?.authenticated) {
@@ -194,10 +197,15 @@ const mapRef = useRef<MapInstance | null>(null);
     };
 
     useEffect(() => {
-        function onKey(e: KeyboardEvent) { if (e.key === 'Escape') closeModal(); }
-        if (modalOpen) window.addEventListener('keydown', onKey);
+        function onKey(e: KeyboardEvent) { 
+            if (e.key === 'Escape') {
+                closeModal();
+                closeBetaModal();
+            }
+        }
+        if (modalOpen || betaModalOpen) window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
-    }, [modalOpen]);
+    }, [modalOpen, betaModalOpen]);
 
     return (
         <div className="min-h-screen bg-white">
@@ -328,6 +336,7 @@ const mapRef = useRef<MapInstance | null>(null);
 
                     {/* Register Button */}
                     <button
+                        onClick={openBetaModal}
                         className="text-white font-black text-xs md:text-sm px-8 md:px-10 py-3 rounded-full transition-all flex items-center gap-2 shadow-md hover:shadow-lg w-full md:w-auto justify-center md:justify-start"
                         style={{ backgroundColor: '#86D864' }}
                     >
@@ -505,7 +514,7 @@ const mapRef = useRef<MapInstance | null>(null);
                             <h3 className="text-6xl md:text-[50px] font-black leading-tight text-gray-900 tracking-tight">
                                 Bowl<br />Collect<br />Compete
                             </h3>
-                            <button className="inline-flex items-center gap-3 bg-[#86D864] text-white px-8 py-4 rounded-2xl font-black text-sm shadow-xl hover:shadow-2xl transition-all uppercase tracking-wider">
+                            <button onClick={openBetaModal} className="inline-flex items-center gap-3 bg-[#86D864] text-white px-8 py-4 rounded-2xl font-black text-sm shadow-xl hover:shadow-2xl transition-all uppercase tracking-wider">
                                 <span className="w-3 h-3 rounded-full bg-white"></span>
                                 EXPLORE THE FEATURES
                             </button>
@@ -577,7 +586,7 @@ const mapRef = useRef<MapInstance | null>(null);
                         <p className="text-sm md:text-base text-white/90 mb-6 leading-relaxed max-w-sm md:max-w-md">
                             Your stats. Your journey. Your legacy — collected, traded, and showcased.
                         </p>
-                        <button className="inline-flex items-center gap-2 bg-[#A3E635] text-white px-5 py-2.5 rounded-full font-bold text-sm shadow-md hover:bg-[#92d02e] transition-colors uppercase tracking-wide">
+                        <button onClick={openBetaModal} className="inline-flex items-center gap-2 bg-[#A3E635] text-white px-5 py-2.5 rounded-full font-bold text-sm shadow-md hover:bg-[#92d02e] transition-colors uppercase tracking-wide">
                             <span className="w-2.5 h-2.5 rounded-full bg-white"></span>
                             CREATE YOUR CARD &rarr;
                         </button>
@@ -782,10 +791,10 @@ const mapRef = useRef<MapInstance | null>(null);
                             </p>
 
                             <div className="flex flex-col gap-4">
-                                <button className="px-8 py-4 text-center font-bold text-lg border-2 border-gray-900 text-gray-900 rounded-full hover:bg-gray-50 transition-colors">
+                                <button onClick={openBetaModal} className="px-8 py-4 text-center font-bold text-lg border-2 border-gray-900 text-gray-900 rounded-full hover:bg-gray-50 transition-colors">
                                     JOIN THE NETWORK
                                 </button>
-                                <button className="px-8 py-4 text-center font-bold text-lg text-white rounded-full shadow-lg hover:shadow-xl transition-shadow" style={{ backgroundColor: '#86D864' }}>
+                                <button onClick={openBetaModal} className="px-8 py-4 text-center font-bold text-lg text-white rounded-full shadow-lg hover:shadow-xl transition-shadow" style={{ backgroundColor: '#86D864' }}>
                                     <span className="w-3 h-3 rounded-full bg-white inline-block mr-3"></span>
                                     REQUEST A DEMO
                                 </button>
@@ -953,7 +962,8 @@ const mapRef = useRef<MapInstance | null>(null);
                                 </div>
 
                                 <button
-                                    type="submit"
+                                    type="button"
+                                    onClick={openBetaModal}
                                     className="w-full text-white font-black text-sm px-6 py-3 rounded-full transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:scale-105"
                                     style={{ backgroundColor: '#86D864' }}
                                 >
@@ -1000,7 +1010,7 @@ const mapRef = useRef<MapInstance | null>(null);
                     <p className="text-lg md:text-xl text-white/95 mb-6 md:mb-8">
                         Engage players, fans, and brands with authentic, community-driven activations.
                     </p>
-                    <button className="px-8 py-3 bg-[#86D864] text-white font-black rounded-full hover:shadow-lg transition-shadow flex items-center gap-2 mx-auto">
+                    <button onClick={openBetaModal} className="px-8 py-3 bg-[#86D864] text-white font-black rounded-full hover:shadow-lg transition-shadow flex items-center gap-2 mx-auto">
                         <span className="w-2.5 h-2.5 bg-white rounded-full"></span>
                         PARTNER WITH US
                     </button>
@@ -1251,7 +1261,8 @@ const mapRef = useRef<MapInstance | null>(null);
                                 </div>
 
                                 <button
-                                    type="submit"
+                                    type="button"
+                                    onClick={openBetaModal}
                                     className="w-full py-4 bg-[#86D864] text-white font-black rounded-lg hover:shadow-lg transition-shadow"
                                 >
                                     SEND MESSAGE
@@ -1526,6 +1537,59 @@ const mapRef = useRef<MapInstance | null>(null);
                     </div>
                 </div>
             </section>
+
+            {/* Beta Popup Modal */}
+            {betaModalOpen && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                    <div 
+                        className="absolute inset-0 bg-black/70 backdrop-blur-md" 
+                        onClick={closeBetaModal}
+                    ></div>
+                    <div className="relative bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 md:p-10 animate-in zoom-in-95 duration-200 flex flex-col items-center text-center">
+                        {/* Close Button */}
+                        <button 
+                            onClick={closeBetaModal} 
+                            className="absolute top-4 right-4 text-gray-500 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white hover:text-gray-900 transition-all z-[210] border border-gray-100"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+
+                        {/* Success Icon */}
+                        <div className="mb-6 mt-4">
+                            <div className="w-16 h-16 bg-[#86D864]/20 rounded-full flex items-center justify-center">
+                                <svg className="w-8 h-8 text-[#86D864]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                        </div>
+
+                        {/* Message */}
+                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-4">
+                            Thanks for Your Interest!
+                        </h2>
+                        
+                        <p className="text-gray-700 text-base leading-relaxed mb-8">
+                            Thanks for your interest in joining our platform! We&apos;re currently in beta testing and will be opening access to everyone very soon.
+                        </p>
+
+                        {/* Action Buttons */}
+                        <div className="w-full flex flex-col gap-3">
+                            <button
+                                onClick={closeBetaModal}
+                                className="w-full py-3 bg-[#86D864] text-white font-black rounded-lg hover:shadow-lg transition-shadow"
+                            >
+                                Got It!
+                            </button>
+                            <button
+                                onClick={closeBetaModal}
+                                className="w-full py-3 bg-gray-100 text-gray-900 font-semibold rounded-lg hover:bg-gray-200 transition-colors"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
