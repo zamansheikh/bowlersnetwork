@@ -1,0 +1,568 @@
+'use client';
+
+import { useState, useRef } from 'react';
+import { Upload, X, Video, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+const LARGE_VIDEO_SUPPORTED_FILES = [
+    "mp4",
+    "webm",
+    "ogg",
+    "mov",
+    "m4v",
+    "mkv",
+    "avi",
+    "flv",
+    "wmv"
+];
+
+const CHUNK_SIZE = 10 * 1024 * 1024; // 10MB chunks minimum (S3 requirement)
+const BUCKET_NAME = "cdn";
+
+interface UploadPart {
+    PartNumber: number;
+    ETag: string;
+}
+
+export default function MediaUploadPage() {
+    const router = useRouter();
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const abortControllerRef = useRef<AbortController | null>(null);
+    const uploadInfoRef = useRef<{ key: string; upload_id: string } | null>(null);
+
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+    const [errorMessage, setErrorMessage] = useState('');
+    const [publicUrl, setPublicUrl] = useState('');
+
+    // Get video duration
+    const getVideoDuration = (file: File): Promise<number> => {
+        return new Promise((resolve, reject) => {
+            const video = document.createElement('video');
+            const objectUrl = URL.createObjectURL(file);
+            
+            video.onloadedmetadata = () => {
+                URL.revokeObjectURL(objectUrl);
+                resolve(video.duration);
+            };
+            
+            video.onerror = () => {
+                URL.revokeObjectURL(objectUrl);
+                reject(new Error('Failed to load video metadata'));
+            };
+            
+            video.src = objectUrl;
+        });
+    };
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Validate file type
+        const fileExtension = file.name.split('.').pop()?.toLowerCase();
+        if (!fileExtension || !LARGE_VIDEO_SUPPORTED_FILES.includes(fileExtension)) {
+            setErrorMessage(`Unsupported file type. Supported formats: ${LARGE_VIDEO_SUPPORTED_FILES.join(', ')}`);
+            return;
+        }
+
+        setSelectedFile(file);
+        setErrorMessage('');
+        setUploadStatus('idle');
+    };
+
+    const removeFile = () => {
+        setSelectedFile(null);
+        setUploadProgress(0);
+        setUploadStatus('idle');
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
+    const handleAbort = async () => {
+        const uploadInfo = uploadInfoRef.current;
+
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
+
+        if (uploadInfo) {
+            try {
+                const token = localStorage.getItem('access_token');
+                const headers: Record<string, string> = {
+                    'Content-Type': 'application/json',
+                };
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+
+                await fetch('/api/cloud/upload/multipart/requests/abort', {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({
+                        bucket: BUCKET_NAME,
+                        params: {
+                            key: uploadInfo.key,
+                            upload_id: uploadInfo.upload_id
+                        }
+                    })
+                });
+                console.log('Upload aborted on server');
+            } catch (error) {
+                console.error('Failed to abort upload on server:', error);
+            }
+        }
+    };
+
+    const uploadFileMultipart = async (file: File) => {
+        try {
+            setIsUploading(true);
+            setUploadStatus('uploading');
+            setUploadProgress(0);
+
+            abortControllerRef.current = new AbortController();
+
+            // Get authorization token from localStorage
+            const token = localStorage.getItem('access_token');
+            const headers: Record<string, string> = {
+                'Content-Type': 'application/json',
+            };
+
+            // Add bearer token if available
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            // Step 1: Initiate multipart upload
+            const initiateResponse = await fetch('/api/cloud/upload/multipart/requests/initiate', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    file_name: file.name,
+                    bucket: BUCKET_NAME
+                }),
+                signal: abortControllerRef.current.signal
+            });
+
+            if (!initiateResponse.ok) {
+                const errorData = await initiateResponse.json();
+                throw new Error(errorData.errors?.[0] || 'Failed to initiate upload');
+            }
+
+            const { key, upload_id } = await initiateResponse.json();
+            uploadInfoRef.current = { key, upload_id };
+
+            // Step 2: Split file into chunks and upload
+            const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+            const uploadedParts: UploadPart[] = [];
+
+            console.log(`[Upload] Starting multipart upload: ${totalChunks} chunks`);
+
+            for (let i = 0; i < totalChunks; i++) {
+                const start = i * CHUNK_SIZE;
+                const end = Math.min(start + CHUNK_SIZE, file.size);
+                const chunk = file.slice(start, end);
+                const partNumber = i + 1;
+
+                console.log(`[Upload] Processing chunk ${partNumber}/${totalChunks} (${chunk.size} bytes)`);
+
+                // Get presigned URL for this chunk
+                const presignedResponse = await fetch('/api/cloud/upload/multipart/requests/presigned-url', {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({
+                        bucket: BUCKET_NAME,
+                        params: {
+                            key,
+                            upload_id,
+                            part_number: partNumber
+                        }
+                    }),
+                    signal: abortControllerRef.current.signal
+                });
+
+                if (!presignedResponse.ok) {
+                    const error = await presignedResponse.json();
+                    throw new Error(`Failed to get presigned URL for part ${partNumber}: ${error.errors?.[0] || presignedResponse.statusText}`);
+                }
+
+                const { presigned_url } = await presignedResponse.json();
+                console.log(`[Upload] Got presigned URL for part ${partNumber}`);
+
+                // Upload chunk to presigned URL
+                // Note: Do NOT include Authorization or Content-Type headers on presigned URLs
+                const uploadResponse = await fetch(presigned_url, {
+                    method: 'PUT',
+                    body: chunk,
+                    signal: abortControllerRef.current.signal
+                });
+
+                if (!uploadResponse.ok) {
+                    const errorText = await uploadResponse.text();
+                    throw new Error(`Failed to upload chunk ${partNumber}: ${uploadResponse.status} ${uploadResponse.statusText} - ${errorText}`);
+                }
+
+                const etag = uploadResponse.headers.get('ETag');
+                if (!etag) {
+                    throw new Error(`No ETag received for chunk ${partNumber}`);
+                }
+
+                // Keep ETag as-is from response (includes quotes)
+                console.log(`[Upload] Chunk ${partNumber} uploaded successfully. ETag: ${etag}`);
+
+                uploadedParts.push({
+                    PartNumber: partNumber,
+                    ETag: etag
+                });
+
+                // Update progress
+                const progress = Math.round(((i + 1) / totalChunks) * 100);
+                setUploadProgress(progress);
+            }
+
+            console.log(`[Upload] All chunks uploaded. Parts to complete:`, uploadedParts);
+
+            // Validate parts array
+            if (uploadedParts.length === 0) {
+                throw new Error('No parts were successfully uploaded');
+            }
+
+            // Verify all parts have valid ETags
+            for (let i = 0; i < uploadedParts.length; i++) {
+                const part = uploadedParts[i];
+                console.log(`[Upload] Part ${i + 1}: PartNumber=${part.PartNumber}, ETag="${part.ETag}" (length=${part.ETag.length})`);
+
+                if (!part.ETag || part.ETag.length === 0) {
+                    throw new Error(`Part ${part.PartNumber} has an invalid or empty ETag`);
+                }
+
+                // ETag should be 32 character hex string (MD5 hash)
+                // Note: We check part.ETag directly as it is already cleaned
+                if (!/^[a-f0-9]{32}$/.test(part.ETag)) {
+                    console.warn(`[Upload] Warning: ETag for part ${part.PartNumber} may not be valid MD5 hash: ${part.ETag}`);
+                }
+            }
+
+            // Step 3: Complete multipart upload
+            console.log(`[Upload] Completing multipart upload with ${uploadedParts.length} parts`);
+
+            const completePayload = {
+                bucket: BUCKET_NAME,
+                params: {
+                    key,
+                    upload_id,
+                    parts: uploadedParts
+                }
+            };
+
+            console.log('[Upload] Complete payload:', JSON.stringify(completePayload, null, 2));
+
+            const completeResponse = await fetch('/api/cloud/upload/multipart/requests/complete', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(completePayload),
+                signal: abortControllerRef.current.signal
+            });
+
+            if (!completeResponse.ok) {
+                const errorData = await completeResponse.json();
+                console.error('[Upload] Complete failed with status:', completeResponse.status);
+                console.error('[Upload] Error response:', JSON.stringify(errorData, null, 2));
+                const errorMsg = errorData.errors?.[0] || errorData.message || errorData.detail || completeResponse.statusText;
+                throw new Error(`Failed to complete upload (${completeResponse.status}): ${errorMsg}`);
+            }
+
+            const { public_url } = await completeResponse.json();
+            console.log('[Upload] Upload completed successfully:', public_url);
+            setPublicUrl(public_url);
+
+            // Step 4: Get video duration and save metadata
+            console.log('[Upload] Saving video metadata');
+            try {
+                // Get video duration
+                console.log('[Upload] Getting video duration...');
+                const videoDuration = await getVideoDuration(file);
+                console.log('[Upload] Video duration:', videoDuration);
+
+                // Save metadata to database
+                const metadataPayload = {
+                    title: title.trim(),
+                    description: description.trim() || 'Video uploaded via BowlersNetwork',
+                    video_type: 'Large',
+                    duration: videoDuration,
+                    url: public_url,
+                };
+                console.log('[Upload] Metadata payload:', JSON.stringify(metadataPayload, null, 2));
+
+                const metadataResponse = await fetch('/api/tube/large-videos', {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify(metadataPayload)
+                });
+
+                console.log('[Upload] Metadata response status:', metadataResponse.status);
+
+                if (!metadataResponse.ok) {
+                    const errorData = await metadataResponse.json();
+                    const errorMsg = errorData.errors?.[0] || errorData.message || metadataResponse.statusText;
+                    throw new Error(`Failed to save video metadata: ${errorMsg}`);
+                }
+
+                const metadataResult = await metadataResponse.json();
+                console.log('[Upload] Video metadata saved successfully:', metadataResult);
+                setUploadStatus('success');
+
+                // Redirect to the media page after a short delay so users see the success message
+                setTimeout(() => {
+                    router.push('/media');
+                }, 1500);
+            } catch (metadataError: any) {
+                console.error('Metadata save error:', metadataError);
+                // Still mark as success since the video was uploaded, but log the error
+                setUploadStatus('success');
+                setTimeout(() => {
+                    router.push('/media');
+                }, 1500);
+            }
+
+        } catch (error: any) {
+            if (error.name === 'AbortError') {
+                console.log('Upload cancelled by user');
+                setUploadStatus('idle');
+                setErrorMessage('Upload cancelled');
+                return;
+            }
+            console.error('Upload error:', error);
+            setErrorMessage(error instanceof Error ? error.message : 'Upload failed');
+            setUploadStatus('error');
+        } finally {
+            setIsUploading(false);
+            abortControllerRef.current = null;
+            uploadInfoRef.current = null;
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!selectedFile) {
+            setErrorMessage('Please select a file to upload');
+            return;
+        }
+
+        if (!title.trim()) {
+            setErrorMessage('Please enter a title');
+            return;
+        }
+
+        await uploadFileMultipart(selectedFile);
+    };
+
+    const formatFileSize = (bytes: number): string => {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    };
+
+    return (
+        <div className="min-h-screen bg-gray-50">
+            {/* Header */}
+            <div className="bg-white border-b">
+                <div className="max-w-4xl mx-auto px-4 py-6">
+                    <Link
+                        href="/media"
+                        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-4"
+                    >
+                        <ArrowLeft className="w-5 h-5" />
+                        <span className="font-medium">Back to Media</span>
+                    </Link>
+                    <h1 className="text-3xl font-bold text-gray-900">Upload Media</h1>
+                    <p className="text-gray-600 mt-2">Share your bowling videos with the community</p>
+                </div>
+            </div>
+
+            {/* Upload Form */}
+            <div className="max-w-4xl mx-auto px-4 py-8">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* File Upload Area */}
+                    <div className="bg-white rounded-lg shadow-md p-6">
+                        <h2 className="text-xl font-semibold text-gray-900 mb-4">Video File</h2>
+
+                        {!selectedFile ? (
+                            <div
+                                onClick={() => fileInputRef.current?.click()}
+                                className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center cursor-pointer hover:border-green-500 hover:bg-green-50 transition-colors"
+                            >
+                                <Upload className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                                <p className="text-lg font-medium text-gray-700 mb-2">
+                                    Click to upload or drag and drop
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                    Supported formats: {LARGE_VIDEO_SUPPORTED_FILES.join(', ')}
+                                </p>
+                                <p className="text-xs text-gray-400 mt-2">
+                                    Maximum file size: No limit (multipart upload)
+                                </p>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept={LARGE_VIDEO_SUPPORTED_FILES.map(ext => `.${ext}`).join(',')}
+                                    onChange={handleFileSelect}
+                                    className="hidden"
+                                />
+                            </div>
+                        ) : (
+                            <div className="border border-gray-200 rounded-lg p-4">
+                                <div className="flex items-start gap-4">
+                                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
+                                        <Video className="w-6 h-6 text-green-600" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-medium text-gray-900 truncate">{selectedFile.name}</p>
+                                        <p className="text-sm text-gray-500">{formatFileSize(selectedFile.size)}</p>
+
+                                        {uploadStatus === 'uploading' && (
+                                            <div className="mt-3">
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className="text-sm text-gray-600">Uploading...</span>
+                                                    <div className="flex items-center gap-3">
+                                                        <button
+                                                            type="button"
+                                                            onClick={handleAbort}
+                                                            className="text-xs text-red-600 hover:text-red-700 font-medium"
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                        <span className="text-sm font-medium text-green-600">{uploadProgress}%</span>
+                                                    </div>
+                                                </div>
+                                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                                    <div
+                                                        className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                                                        style={{ width: `${uploadProgress}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {uploadStatus === 'success' && (
+                                            <div className="flex items-center gap-2 mt-2 text-green-600">
+                                                <CheckCircle className="w-4 h-4" />
+                                                <span className="text-sm font-medium">Upload complete!</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {uploadStatus !== 'uploading' && (
+                                        <button
+                                            type="button"
+                                            onClick={removeFile}
+                                            className="text-gray-400 hover:text-red-600 transition-colors"
+                                        >
+                                            <X className="w-5 h-5" />
+                                        </button>
+                                    )}
+                                    {uploadStatus === 'uploading' && (
+                                        <button
+                                            type="button"
+                                            onClick={handleAbort}
+                                            className="text-gray-400 hover:text-red-600 transition-colors"
+                                            title="Cancel Upload"
+                                        >
+                                            <X className="w-5 h-5" />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Video Details */}
+                    <div className="bg-white rounded-lg shadow-md p-6">
+                        <h2 className="text-xl font-semibold text-gray-900 mb-4">Video Details</h2>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Title <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    placeholder="Enter video title"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Description
+                                </label>
+                                <textarea
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    placeholder="Add a description for your video"
+                                    rows={4}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Error Message */}
+                    {errorMessage && (
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+                            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                            <p className="text-sm text-red-800">{errorMessage}</p>
+                        </div>
+                    )}
+
+                    {/* Success Message */}
+                    {uploadStatus === 'success' && publicUrl && (
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <div className="flex items-start gap-3 mb-3">
+                                <CheckCircle className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+                                <div className="flex-1">
+                                    <p className="text-sm font-medium text-green-800 mb-1">Upload successful!</p>
+                                    <p className="text-xs text-green-700">Your video has been uploaded and is ready to share.</p>
+                                </div>
+                            </div>
+                            <div className="bg-white rounded p-3 border border-green-200">
+                                <p className="text-xs text-gray-500 mb-1">Public URL:</p>
+                                <p className="text-sm text-gray-900 break-all">{publicUrl}</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Submit Button */}
+                    <div className="flex gap-4">
+                        <button
+                            type="button"
+                            onClick={() => router.push('/media')}
+                            className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                            disabled={isUploading}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={isUploading || !selectedFile || uploadStatus === 'success'}
+                            className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        >
+                            {isUploading ? 'Uploading...' : uploadStatus === 'success' ? 'Upload Complete' : 'Upload Video'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
