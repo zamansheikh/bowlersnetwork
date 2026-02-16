@@ -22,17 +22,17 @@ jobs:
           ssh -o StrictHostKeyChecking=no root@31.97.135.175 "
             export PATH=\$PATH:/root/.bun/bin &&  # Existing for Bun
             export PATH=/root/.nvm/versions/node/v20.19.5/bin:\$PATH &&  # Add this for Node 20 (replace with your path)
-            cd /var/www/amateur_player &&
+            cd /var/www/bowlersnetwork &&
             git stash &&
             GIT_SSH_COMMAND=\"ssh -i ~/.ssh/id_ed25519_deploy\" git pull origin main &&
             bun install &&
             bun run build &&
-            if tmux has-session -t amateur_player 2>/dev/null; then
-              echo \"Already session running: amateur_player. Killing it...\"
-              tmux kill-session -t amateur_player
+            if tmux has-session -t bowlersnetwork 2>/dev/null; then
+              echo \"Already session running: bowlersnetwork. Killing it...\"
+              tmux kill-session -t bowlersnetwork
             fi &&
-            echo \"Starting new session: amateur_player\" &&
-            tmux new-session -d -s amateur_player 'bun run start' &&
-            echo \"Successfully started 'bun run start' in tmux session amateur_player\"
+            echo \"Starting new session: bowlersnetwork\" &&
+            tmux new-session -d -s bowlersnetwork 'bun run start' &&
+            echo \"Successfully started 'bun run start' in tmux session bowlersnetwork\"
           "
- # GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519_deploy" git clone git@github.com:zamansheikh/amateur_player.git .
+ # GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519_deploy" git clone git@github.com:zamansheikh/bowlersnetwork.git .
