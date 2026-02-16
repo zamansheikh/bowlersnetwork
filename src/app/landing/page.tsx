@@ -1295,9 +1295,9 @@ export default function Landing2Page() {
                                 <a href="#" className="text-[#86D864] hover:text-[#7ac85a] text-sm font-semibold transition-colors">
                                     Privacy Policy
                                 </a>
-                                <a href="#" className="text-[#86D864] hover:text-[#7ac85a] text-sm font-semibold transition-colors">
+                                <Link href="/terms-of-service" className="text-[#86D864] hover:text-[#7ac85a] text-sm font-semibold transition-colors">
                                     Terms of Service
-                                </a>
+                                </Link>
                                 <a href="#" className="text-[#86D864] hover:text-[#7ac85a] text-sm font-semibold transition-colors">
                                     Contact
                                 </a>
