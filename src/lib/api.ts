@@ -62,6 +62,24 @@ export const authApi = {
             email: string;
             password: string;
         };
+        post_signup_data?: {
+            dob: {
+                date: string;
+                is_underage: boolean;
+                parent_email: string | null;
+                is_public: boolean;
+            };
+            critical_info: {
+                is_coach: boolean;
+            };
+            address: {
+                address_str: string;
+                zipcode: string;
+                lat: string;
+                long: string;
+            };
+            fav_brands: number[];
+        };
         verification_code: string | null;
     }) => {
         const response = await api.post('/api/auth/signup', userData);
