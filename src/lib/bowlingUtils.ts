@@ -41,7 +41,7 @@ export function applyThrowToStanding(standing: Set<number>, throwEntity: ThrowEn
 
 export function standingPinsBefore(frame: FrameEntity, throwIndex: number): Set<number> {
     let standing = fullPinSetCopy();
-    
+
     if (frame.number < 10) {
         for (let i = 0; i < throwIndex && i < frame.throws.length; i++) {
             standing = applyThrowToStanding(
@@ -60,7 +60,7 @@ export function standingPinsBefore(frame: FrameEntity, throwIndex: number): Set<
     const first = frame.throws.length > 0
         ? clipToStanding(frame.throws[0], standing)
         : { knockedPins: new Set<number>(), isFoul: false };
-    
+
     if (throwIndex === 1) {
         return standingBeforeSecondInTenth(first);
     }
@@ -69,7 +69,7 @@ export function standingPinsBefore(frame: FrameEntity, throwIndex: number): Set<
     const second = frame.throws.length > 1
         ? clipToStanding(frame.throws[1], secondStanding)
         : { knockedPins: new Set<number>(), isFoul: false };
-    
+
     return standingBeforeThirdInTenth(first, second);
 }
 
@@ -83,11 +83,11 @@ function standingBeforeSecondInTenth(first: ThrowEntity): Set<number> {
 function standingBeforeThirdInTenth(first: ThrowEntity, second: ThrowEntity): Set<number> {
     const firstIsStrike = first.knockedPins.size === 10 && !first.isFoul;
     const secondIsStrike = second.knockedPins.size === 10 && !second.isFoul;
-    
+
     if (firstIsStrike && secondIsStrike) {
         return fullPinSetCopy();
     }
-    
+
     if (firstIsStrike) {
         // First was strike, second wasn't - check for spare
         const afterSecond = applyThrowToStanding(fullPinSetCopy(), second);
@@ -96,14 +96,14 @@ function standingBeforeThirdInTenth(first: ThrowEntity, second: ThrowEntity): Se
         }
         return afterSecond;
     }
-    
+
     // First wasn't strike - check if we made a spare
     const afterFirst = applyThrowToStanding(fullPinSetCopy(), first);
     const afterSecond = applyThrowToStanding(afterFirst, second);
     if (afterSecond.size === 0) {
         return fullPinSetCopy(); // Spare, reset pins
     }
-    
+
     return afterSecond; // No third throw in this case
 }
 
@@ -118,10 +118,10 @@ export function standingPinsAfter(frame: FrameEntity, throwIndex: number): Set<n
 
 function countClusters(pins: Set<number>): number {
     if (pins.size === 0) return 0;
-    
+
     const visited = new Set<number>();
     let clusters = 0;
-    
+
     for (const pin of pins) {
         if (!visited.has(pin)) {
             clusters++;
@@ -131,7 +131,7 @@ function countClusters(pins: Set<number>): number {
                 const current = queue.shift()!;
                 if (visited.has(current)) continue;
                 visited.add(current);
-                
+
                 const neighbors = PIN_NEIGHBORS[current] || [];
                 for (const neighbor of neighbors) {
                     if (pins.has(neighbor) && !visited.has(neighbor)) {
@@ -141,7 +141,7 @@ function countClusters(pins: Set<number>): number {
             }
         }
     }
-    
+
     return clusters;
 }
 
@@ -175,11 +175,11 @@ export function isSplitLeave(frame: FrameEntity, throwIndex: number): boolean {
 export function calculateCumulativeScores(frames: FrameEntity[]): number[] {
     const scores: number[] = [];
     let cumulative = 0;
-    
+
     for (let i = 0; i < frames.length && i < 10; i++) {
         const frame = frames[i];
         const frameScore = calculateFrameScore(frames, i);
-        
+
         if (frameScore !== null) {
             cumulative += frameScore;
             scores.push(cumulative);
@@ -188,7 +188,7 @@ export function calculateCumulativeScores(frames: FrameEntity[]): number[] {
             break;
         }
     }
-    
+
     return scores;
 }
 
@@ -196,53 +196,53 @@ export function calculateCumulativeScores(frames: FrameEntity[]): number[] {
 function calculateFrameScore(frames: FrameEntity[], frameIndex: number): number | null {
     const frame = frames[frameIndex];
     if (!frame || frame.throws.length === 0) return null;
-    
+
     const throws = frame.throws;
-    
+
     // 10th frame - special handling
     if (frameIndex === 9) {
         if (throws.length < 2) return null;
         const first = throws[0].isFoul ? 0 : throws[0].knockedPins.size;
         const second = throws[1].isFoul ? 0 : throws[1].knockedPins.size;
-        
+
         // Need third throw if strike or spare
         if (first === 10 || first + second >= 10) {
             if (throws.length < 3) return null;
             const third = throws[2].isFoul ? 0 : throws[2].knockedPins.size;
             return first + second + third;
         }
-        
+
         return first + second;
     }
-    
+
     // Frames 1-9
     const firstPins = throws[0].isFoul ? 0 : throws[0].knockedPins.size;
-    
+
     // Strike
     if (firstPins === 10) {
         const nextTwo = getNextTwoThrows(frames, frameIndex);
         if (nextTwo === null) return null;
         return 10 + nextTwo;
     }
-    
+
     // Need second throw
     if (throws.length < 2) return null;
     const secondPins = throws[1].isFoul ? 0 : throws[1].knockedPins.size;
-    
+
     // Spare
     if (firstPins + secondPins === 10) {
         const nextOne = getNextOneThrow(frames, frameIndex);
         if (nextOne === null) return null;
         return 10 + nextOne;
     }
-    
+
     // Open frame
     return firstPins + secondPins;
 }
 
 function getNextTwoThrows(frames: FrameEntity[], currentFrameIndex: number): number | null {
     const throws: number[] = [];
-    
+
     for (let i = currentFrameIndex + 1; i < frames.length && throws.length < 2; i++) {
         const frame = frames[i];
         for (const t of frame.throws) {
@@ -250,7 +250,7 @@ function getNextTwoThrows(frames: FrameEntity[], currentFrameIndex: number): num
             if (throws.length >= 2) break;
         }
     }
-    
+
     if (throws.length < 2) return null;
     return throws[0] + throws[1];
 }
@@ -272,17 +272,17 @@ export function getFrameSymbols(frame: FrameEntity): string[] {
     const slots = isTenth ? 3 : 2;
     const result = Array(slots).fill('');
     const throws = frame.throws;
-    
+
     if (throws.length === 0) return result;
-    
+
     const first = throws[0];
     result[0] = symbolForFirstThrow(first);
-    
+
     if (!isTenth) {
         if (first.knockedPins.size === 10 && !first.isFoul) {
             return result; // Strike only shows X
         }
-        
+
         if (throws.length >= 2) {
             const second = throws[1];
             if (second.isFoul) {
@@ -297,18 +297,18 @@ export function getFrameSymbols(frame: FrameEntity): string[] {
         }
         return result;
     }
-    
+
     // 10th frame
     if (throws.length >= 2) {
         const second = throws[1];
         const firstIsStrike = first.knockedPins.size === 10 && !first.isFoul;
-        
+
         if (second.isFoul) {
             result[1] = 'F';
         } else if (second.knockedPins.size === 10) {
             result[1] = 'X';
-        } else if (!firstIsStrike && !first.isFoul && 
-                   first.knockedPins.size + second.knockedPins.size === 10) {
+        } else if (!firstIsStrike && !first.isFoul &&
+            first.knockedPins.size + second.knockedPins.size === 10) {
             result[1] = '/';
         } else if (second.knockedPins.size === 0) {
             result[1] = '-';
@@ -316,19 +316,19 @@ export function getFrameSymbols(frame: FrameEntity): string[] {
             result[1] = `${second.knockedPins.size}`;
         }
     }
-    
+
     if (throws.length >= 3) {
         const second = throws[1];
         const third = throws[2];
         const firstIsStrike = first.knockedPins.size === 10 && !first.isFoul;
         const secondIsStrike = second.knockedPins.size === 10 && !second.isFoul;
-        
+
         if (third.isFoul) {
             result[2] = 'F';
         } else if (third.knockedPins.size === 10) {
             result[2] = 'X';
-        } else if (firstIsStrike && !secondIsStrike && 
-                   second.knockedPins.size + third.knockedPins.size === 10) {
+        } else if (firstIsStrike && !secondIsStrike &&
+            second.knockedPins.size + third.knockedPins.size === 10) {
             result[2] = '/';
         } else if (third.knockedPins.size === 0) {
             result[2] = '-';
@@ -336,7 +336,7 @@ export function getFrameSymbols(frame: FrameEntity): string[] {
             result[2] = `${third.knockedPins.size}`;
         }
     }
-    
+
     return result;
 }
 
@@ -356,22 +356,22 @@ export function calculateTotalScore(frames: FrameEntity[]): number {
 // Check if a game is complete
 export function isGameComplete(frames: FrameEntity[]): boolean {
     if (frames.length < 10) return false;
-    
+
     const tenthFrame = frames[9];
     if (!tenthFrame) return false;
-    
+
     const throws = tenthFrame.throws;
     if (throws.length < 2) return false;
-    
+
     const first = throws[0];
     const second = throws[1];
-    
+
     // If strike or spare in 10th, need 3 throws
-    if (first.knockedPins.size === 10 || 
+    if (first.knockedPins.size === 10 ||
         first.knockedPins.size + second.knockedPins.size === 10) {
         return throws.length >= 3;
     }
-    
+
     return true;
 }
 
@@ -464,4 +464,53 @@ export function createEmptyFrames(): FrameEntity[] {
         throws: [],
         isPocketHit: false
     }));
+}
+
+// Convert ApiGameDetail to BowlingGameEntity
+import { ApiGameDetail, ApiFrame, ApiThrow } from '@/types';
+
+export function apiToGame(apiGame: ApiGameDetail): BowlingGameEntity {
+    return {
+        id: apiGame.id.toString(),
+        frames: apiGame.frames.map(apiFrameToFrame),
+        totalScore: apiGame.total_score,
+        date: new Date(apiGame.date),
+        isComplete: apiGame.is_complete,
+        handPreference: apiGame.hand,
+        oilPattern: apiGame.oil_pattern,
+        laneCondition: apiGame.lane_condition,
+        gameType: apiGame.game_type,
+        laneNumber: apiGame.lane_number
+    };
+}
+
+function apiFrameToFrame(apiFrame: ApiFrame): FrameEntity {
+    return {
+        number: apiFrame.number,
+        throws: apiFrame.throws.map(apiThrowToThrow),
+        isPocketHit: apiFrame.is_pocket_hit
+    };
+}
+
+function apiThrowToThrow(apiThrow: ApiThrow): ThrowEntity {
+    return {
+        knockedPins: new Set(apiThrow.knocked_pins),
+        isFoul: apiThrow.is_foul
+    };
+}
+
+// Convert BowlingGameEntity to API payload format
+export function gameToApiPayload(game: BowlingGameEntity) {
+    return {
+        name: `Game ${new Date(game.date).toLocaleDateString()} ${new Date(game.date).toLocaleTimeString()}`,
+        date: game.date.toISOString(),
+        isComplete: game.isComplete,
+        handPreference: game.handPreference,
+        oilPattern: game.oilPattern,
+        laneCondition: game.laneCondition,
+        gameType: game.gameType,
+        laneNumber: game.laneNumber,
+        totalScore: game.totalScore,
+        frames: game.frames.map(frameToData) // frameToData already matches expectations mostly, but check field names
+    };
 }

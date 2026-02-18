@@ -232,15 +232,16 @@ export interface ProVideo {
 // ======== BOWLING GAME TYPES ========
 
 // Enum Types
-export type GameType = 'practice' | 'tournament';
+export type GameType = 'practice' | 'tournament' | 'league';
 export type HandPreference = 'left' | 'right';
 export type LaneCondition = 'oily' | 'dry' | 'medium';
-export type OilPattern = 'house' | 'sport' | 'challenge';
+export type OilPattern = 'house' | 'sport' | 'challenge' | 'custom';
 
 // Display names for enums
 export const GameTypeDisplay: Record<GameType, string> = {
     practice: 'Practice',
     tournament: 'Tournament',
+    league: 'League',
 };
 
 export const HandPreferenceDisplay: Record<HandPreference, string> = {
@@ -264,12 +265,14 @@ export const OilPatternDisplay: Record<OilPattern, string> = {
     house: 'House Pattern',
     sport: 'Sport Pattern',
     challenge: 'Challenge Pattern',
+    custom: 'Custom Pattern',
 };
 
 export const OilPatternDescription: Record<OilPattern, string> = {
     house: 'Easy pocket hit, more forgiving',
     sport: 'Challenging, less forgiving',
     challenge: 'Most difficult pattern',
+    custom: 'User defined pattern',
 };
 
 // Throw Entity - represents a single throw
@@ -572,4 +575,124 @@ export interface AuthContextType {
     }) => Promise<boolean>;
     signout: () => void;
     refreshUser: () => Promise<void>;
+}
+
+// ======== GAME API TYPES ========
+
+export interface ApiGameSummary {
+    id: number;
+    name: string;
+    date: string;
+    lane_number: string;
+    hand: 'right' | 'left';
+    oil_pattern: 'house' | 'sport' | 'custom';
+    lane_condition: 'dry' | 'medium' | 'oily';
+    game_type: 'practice' | 'league' | 'tournament';
+    is_complete: boolean;
+    total_score: number;
+    strike_count: number;
+    spare_count: number;
+    pocket_hit_count: number;
+    foul_count: number;
+    first_ball_avg: number;
+    spare_conversion_rate: number | null;
+}
+
+export interface ApiGameListResponse {
+    total: number;
+    page: number;
+    per_page: number;
+    results: ApiGameSummary[];
+}
+
+export interface ApiThrow {
+    knocked_pins: number[];
+    is_foul: boolean;
+    throw_number?: number;
+    pin_count?: number;
+}
+
+export interface ApiFrame {
+    number: number;
+    is_strike: boolean;
+    is_spare: boolean;
+    is_pocket_hit: boolean;
+    pins_first: number;
+    pins_second: number | null;
+    pins_third: number | null;
+    frame_score: number;
+    throws: ApiThrow[];
+}
+
+export interface ApiGameDetail extends ApiGameSummary {
+    frames: ApiFrame[];
+}
+
+export interface ApiGameStats {
+    game_id: number;
+    name: string;
+    total_score: number;
+    strike_count: number;
+    spare_count: number;
+    foul_count: number;
+    pocket_hit_count: number;
+    first_ball_avg: number;
+    spare_conversion_rate: number;
+    frame_breakdown: {
+        frame: number;
+        is_strike: boolean;
+        is_spare: boolean;
+        is_pocket_hit: boolean;
+        pins_first: number;
+        pins_second: number | null;
+        pins_third: number | null;
+        frame_score: number;
+        fouls: number[];
+    }[];
+    pin_leaves: {
+        frame: number;
+        pins_left: number[];
+    }[];
+    insights: string[];
+}
+
+export interface ApiCareerStats {
+    games_played: number;
+    avg_score: number;
+    high_score: number;
+    low_score: number;
+    total_strikes: number;
+    total_spares: number;
+    total_fouls: number;
+    avg_first_ball: number;
+    pocket_hits: number;
+    strike_rate: number;
+    spare_rate: number;
+    pocket_hit_rate: number;
+}
+
+export interface ApiScoreTrend {
+    score_trend: string;
+    peak_score: number;
+    avg_over_last: number;
+    games: {
+        id: number;
+        name: string;
+        date: string;
+        game_type: string;
+        total_score: number;
+        strike_count: number;
+        spare_count: number;
+        first_ball_avg: number;
+    }[];
+}
+
+export interface ApiLeaderboardEntry {
+    rank: number;
+    player: string;
+    game_name: string;
+    score: number;
+    strike_count: number;
+    spare_count: number;
+    date: string;
 }

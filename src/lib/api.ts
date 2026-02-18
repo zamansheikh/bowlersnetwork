@@ -218,3 +218,73 @@ export const teamsApi = {
         return response.data;
     }
 };
+
+// Games API functions
+import { ApiGameListResponse, ApiGameDetail, ApiGameStats, ApiCareerStats, ApiScoreTrend, ApiLeaderboardEntry } from '@/types';
+
+export const gamesApi = {
+    // 1. List Games
+    listGames: async (params?: {
+        page?: number;
+        per_page?: number;
+        game_type?: 'practice' | 'league' | 'tournament';
+        oil_pattern?: 'house' | 'sport' | 'custom';
+        is_complete?: boolean;
+        search?: string;
+    }) => {
+        const response = await api.get<ApiGameListResponse>('/api/games/', { params });
+        return response.data;
+    },
+
+    // 2. Create (Ingest) a Game
+    createGame: async (gameData: any) => {
+        const response = await api.post<ApiGameDetail>('/api/games/', gameData);
+        return response.data;
+    },
+
+    // 3. Get Game Detail
+    getGame: async (id: number | string) => {
+        const response = await api.get<ApiGameDetail>(`/api/games/${id}/`);
+        return response.data;
+    },
+
+    // 4. Update Game
+    updateGame: async (id: number | string, data: { name?: string; game_type?: string }) => {
+        const response = await api.patch<ApiGameDetail>(`/api/games/${id}/`, data);
+        return response.data;
+    },
+
+    // 5. Delete Game
+    deleteGame: async (id: number | string) => {
+        await api.delete(`/api/games/${id}/`);
+    },
+
+    // 6. Game Stats & Insights
+    getGameStats: async (id: number | string) => {
+        const response = await api.get<ApiGameStats>(`/api/games/${id}/stats/`);
+        return response.data;
+    },
+
+    // 7. Career Stats
+    getCareerStats: async () => {
+        const response = await api.get<ApiCareerStats>('/api/stats/');
+        return response.data;
+    },
+
+    // 8. Score Trends
+    getScoreTrends: async (limit: number = 10) => {
+        const response = await api.get<ApiScoreTrend>('/api/stats/trends/', {
+            params: { last: limit }
+        });
+        return response.data;
+    },
+
+    // 9. Leaderboard
+    getLeaderboard: async (params?: {
+        game_type?: 'practice' | 'league' | 'tournament';
+        limit?: number;
+    }) => {
+        const response = await api.get<ApiLeaderboardEntry[]>('/api/leaderboard/', { params });
+        return response.data;
+    }
+};

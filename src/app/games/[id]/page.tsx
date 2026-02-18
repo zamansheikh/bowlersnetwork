@@ -4,7 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { GameAnalytics } from '@/components/games';
 import { BowlingGameEntity } from '@/types';
-import { getGameById } from '@/lib/gameStorage';
+import { gamesApi } from '@/lib/api';
+import { apiToGame } from '@/lib/bowlingUtils';
 
 export default function GameDetailPage() {
     const params = useParams();
@@ -14,16 +15,23 @@ export default function GameDetailPage() {
     const [error, setError] = useState(false);
 
     useEffect(() => {
-        const gameId = params.id as string;
-        if (gameId) {
-            const foundGame = getGameById(gameId);
-            if (foundGame) {
-                setGame(foundGame);
-            } else {
+        const fetchGame = async () => {
+            try {
+                const gameId = params.id as string;
+                if (!gameId) return;
+
+                const apiGame = await gamesApi.getGame(gameId);
+                const gameEntity = apiToGame(apiGame);
+                setGame(gameEntity);
+            } catch (err) {
+                console.error('Failed to fetch game details:', err);
                 setError(true);
+            } finally {
+                setLoading(false);
             }
-        }
-        setLoading(false);
+        };
+
+        fetchGame();
     }, [params.id]);
 
     if (loading) {

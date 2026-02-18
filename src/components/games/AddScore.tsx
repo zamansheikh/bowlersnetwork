@@ -2,22 +2,24 @@
 
 import React, { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-    FrameEntity, 
-    ThrowEntity, 
-    BowlingGameEntity, 
+import {
+    FrameEntity,
+    ThrowEntity,
+    BowlingGameEntity,
     GameSetupData,
 } from '@/types';
-import { 
-    fullPinSetCopy, 
-    standingPinsBefore, 
+import {
+    fullPinSetCopy,
+    standingPinsBefore,
     calculateCumulativeScores,
     calculateTotalScore,
     isGameComplete,
     createEmptyFrames,
-    generateGameId
+    generateGameId,
+    gameToApiPayload
 } from '@/lib/bowlingUtils';
 import { saveGame, getGameSettings } from '@/lib/gameStorage';
+import { gamesApi } from '@/lib/api';
 import PinDeck from './PinDeck';
 import Scoreboard from './Scoreboard';
 import SmartNextButton from './SmartNextButton';
@@ -30,7 +32,7 @@ interface AddScoreProps {
 
 export default function AddScore({ initialGame, gameSetupData, onComplete }: AddScoreProps) {
     const router = useRouter();
-    const [frames, setFrames] = useState<FrameEntity[]>(() => 
+    const [frames, setFrames] = useState<FrameEntity[]>(() =>
         initialGame?.frames || createEmptyFrames()
     );
     const [currentFrame, setCurrentFrame] = useState(1);
@@ -40,9 +42,9 @@ export default function AddScore({ initialGame, gameSetupData, onComplete }: Add
     const [gameSaved, setGameSaved] = useState(false);
     const [showCompletionDialog, setShowCompletionDialog] = useState(false);
     const [completionScore, setCompletionScore] = useState<number | null>(null);
-    
+
     const [gameId] = useState(() => initialGame?.id || generateGameId());
-    const [gameSettings] = useState<GameSetupData>(() => 
+    const [gameSettings] = useState<GameSetupData>(() =>
         gameSetupData || {
             oilPattern: initialGame?.oilPattern || 'house',
             laneCondition: initialGame?.laneCondition || 'medium',
@@ -75,11 +77,11 @@ export default function AddScore({ initialGame, gameSetupData, onComplete }: Add
     // Handle pin tap - toggle between knocked and standing
     const handlePinTap = useCallback((pin: number) => {
         if (currentIsFoul) return;
-        
+
         // Check if pin was standing before this throw (available to interact with)
         const standing = getStandingPins();
         if (!standing.has(pin)) return; // Pin was already knocked in previous throw
-        
+
         setCurrentKnockedPins(prev => {
             const newSet = new Set(prev);
             if (newSet.has(pin)) {
@@ -122,11 +124,11 @@ export default function AddScore({ initialGame, gameSetupData, onComplete }: Add
             const newFrames = [...prev];
             const frameIndex = currentFrame - 1;
             const frame = { ...newFrames[frameIndex] };
-            
+
             // Add throw to current frame
             frame.throws = [...frame.throws.slice(0, currentThrow - 1), newThrow];
             newFrames[frameIndex] = frame;
-            
+
             return newFrames;
         });
 
@@ -141,7 +143,7 @@ export default function AddScore({ initialGame, gameSetupData, onComplete }: Add
                 const firstPins = firstThrow?.isFoul ? 0 : (firstThrow?.knockedPins.size || 0);
                 const isStrike = firstPins === 10;
                 const isSpare = firstPins + pins === 10;
-                
+
                 if (isStrike || isSpare) {
                     setCurrentThrow(3);
                 } else {
@@ -186,7 +188,7 @@ export default function AddScore({ initialGame, gameSetupData, onComplete }: Add
     const handleStrikeOrSpare = useCallback(() => {
         const standing = getStandingPins();
         if (standing.size === 0) return;
-        
+
         // Commit strike/spare throw immediately
         commitThrow(standing, false);
     }, [getStandingPins, commitThrow]);
@@ -220,7 +222,7 @@ export default function AddScore({ initialGame, gameSetupData, onComplete }: Add
     }, [canGoPrevious, currentFrame, currentThrow, frames]);
 
     // Save game
-    const handleSaveGame = useCallback(() => {
+    const handleSaveGame = useCallback(async () => {
         const settings = getGameSettings();
         const totalScore = calculateTotalScore(frames);
         const complete = isGameComplete(frames);
@@ -238,21 +240,27 @@ export default function AddScore({ initialGame, gameSetupData, onComplete }: Add
             laneNumber: gameSettings.laneNumber,
         };
 
-        saveGame(game);
-        setGameSaved(true);
-        
-        setTimeout(() => {
-            if (onComplete) {
-                onComplete();
-            } else {
-                router.push('/games');
-            }
-        }, 1000);
+        try {
+            // Convert to API payload and save
+            await gamesApi.createGame(gameToApiPayload(game));
+            setGameSaved(true);
+
+            setTimeout(() => {
+                if (onComplete) {
+                    onComplete();
+                } else {
+                    router.push('/games');
+                }
+            }, 1000);
+        } catch (error) {
+            console.error('Failed to save game:', error);
+            // Optional: Show error state to user
+        }
     }, [frames, gameId, gameSettings, router, onComplete]);
 
     // Determine strike/spare label
-    const strikeOrSpareLabel = (currentThrow === 1 || (currentFrame === 10 && currentThrow === 3)) 
-        ? 'Strike' 
+    const strikeOrSpareLabel = (currentThrow === 1 || (currentFrame === 10 && currentThrow === 3))
+        ? 'Strike'
         : 'Spare';
 
     return (
@@ -316,11 +324,10 @@ export default function AddScore({ initialGame, gameSetupData, onComplete }: Add
                 <button
                     onClick={handlePreviousThrow}
                     disabled={!canGoPrevious}
-                    className={`flex-1 py-3 rounded-xl font-semibold transition-all ${
-                        canGoPrevious
-                            ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            : 'bg-gray-50 text-gray-300 cursor-not-allowed'
-                    }`}
+                    className={`flex-1 py-3 rounded-xl font-semibold transition-all ${canGoPrevious
+                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        : 'bg-gray-50 text-gray-300 cursor-not-allowed'
+                        }`}
                 >
                     ← Previous
                 </button>
