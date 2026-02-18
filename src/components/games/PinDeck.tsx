@@ -10,7 +10,7 @@ interface PinDeckProps {
     onPinTap: (pin: number) => void;
 }
 
-export interface PinDeckPropsExport extends PinDeckProps {}
+export interface PinDeckPropsExport extends PinDeckProps { }
 
 // Pin positions as percentage of container (matching Flutter layout)
 const PIN_POSITIONS: Record<number, { x: number; y: number }> = {
@@ -132,13 +132,18 @@ function Pin({ number, position, isStanding, isKnocked, isDisabled, onTap }: Pin
         // Knocked down or unavailable pin
         return (
             <button
-                onClick={onTap}
+                type="button"
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onTap();
+                    }
+                }}
                 disabled={isDisabled}
-                className={`absolute flex items-center justify-center rounded-full transition-all duration-200 ${
-                    isKnocked
-                        ? 'bg-gray-50 border-2 border-green-500 shadow-sm'
-                        : 'bg-gray-100 border-2 border-gray-300'
-                } ${isDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:scale-105'}`}
+                className={`absolute flex items-center justify-center rounded-full transition-all duration-200 ${isKnocked
+                    ? 'bg-gray-50 border-2 border-green-500 shadow-sm'
+                    : 'bg-gray-100 border-2 border-gray-300'
+                    } ${isDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:scale-105'}`}
                 style={{
                     width: size,
                     height: size,
@@ -147,9 +152,8 @@ function Pin({ number, position, isStanding, isKnocked, isDisabled, onTap }: Pin
                 }}
             >
                 <span
-                    className={`font-bold text-sm ${
-                        isKnocked ? 'text-green-600' : 'text-gray-400'
-                    }`}
+                    className={`font-bold text-sm ${isKnocked ? 'text-green-600' : 'text-gray-400'
+                        }`}
                 >
                     {number}
                 </span>
@@ -160,13 +164,18 @@ function Pin({ number, position, isStanding, isKnocked, isDisabled, onTap }: Pin
     // Standing pin
     return (
         <button
-            onClick={onTap}
+            type="button"
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onTap();
+                }
+            }}
             disabled={isDisabled}
-            className={`absolute flex flex-col items-center justify-center rounded-full transition-all duration-200 ${
-                isKnocked
-                    ? 'bg-green-50 border-2 border-green-500 shadow-md'
-                    : 'bg-white border-2 border-green-500 shadow-md hover:shadow-lg'
-            } ${isDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:scale-105 active:scale-95'}`}
+            className={`absolute flex flex-col items-center justify-center rounded-full transition-all duration-200 ${isKnocked
+                ? 'bg-green-50 border-2 border-green-500 shadow-md'
+                : 'bg-white border-2 border-green-500 shadow-md hover:shadow-lg'
+                } ${isDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:scale-105 active:scale-95'}`}
             style={{
                 width: size,
                 height: size,
@@ -188,9 +197,8 @@ function Pin({ number, position, isStanding, isKnocked, isDisabled, onTap }: Pin
                 }}
             />
             <span
-                className={`absolute bottom-1 font-bold text-xs ${
-                    isKnocked ? 'text-green-700' : 'text-gray-600'
-                }`}
+                className={`absolute bottom-1 font-bold text-xs ${isKnocked ? 'text-green-700' : 'text-gray-600'
+                    }`}
             >
                 {number}
             </span>
