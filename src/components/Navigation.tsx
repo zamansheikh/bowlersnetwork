@@ -44,9 +44,9 @@ const navigation = [
     { name: 'Newsfeed', href: '/feedv3', icon: Home },
     // { name: 'Pro Players', href: '/pro-players', icon: Trophy },
     { name: 'Chatter', href: '/chatter', icon: Lightbulb },
-    { name: 'Trading Cards', href: '/trading-cards', icon: Zap },
+    { name: 'Trading Cards', href: '/trading-cards', icon: Zap, status: 'BETA' },
     // { name: 'Roadmap', href: '/roadmap', icon: Map },
-    { name: 'Overview', href: '/overview', icon: BarChart3 },
+    { name: 'Overview', href: '/overview', icon: BarChart3, status: 'UPCOMING' },
     { name: 'Pros', href: '/pros', icon: Trophy },
     { name: 'Brands', href: '/brand-feed', icon: Tag },
     { name: 'Events', href: '/events', icon: CalendarDays },
@@ -55,12 +55,12 @@ const navigation = [
     // { name: 'Feedv3', href: '/feedv3', icon: Home },
     { name: 'Games', href: '/games', icon: Target },
     { name: 'Centers', href: '/centers', icon: MapPin },
-    { name: 'Xchange', href: '/xchange', icon: ShoppingCart },
-    { name: 'Perks', href: '/perks', icon: Gift },
+    { name: 'Xchange', href: '/xchange', icon: ShoppingCart, status: 'UPCOMING' },
+    { name: 'Perks', href: '/perks', icon: Gift, status: 'UPCOMING' },
     { name: 'Messages', href: '/messages', icon: MessageCircle },
     { name: 'My Teams', href: '/teams', icon: Users },
-    { name: 'Analytics', href: '/analytics', icon: Target },
-    { name: 'Tournaments', href: '/tournaments', icon: Settings },
+    { name: 'Analytics', href: '/analytics', icon: Target, status: 'UPCOMING' },
+    { name: 'Tournaments', href: '/tournaments', icon: Settings, status: 'UPCOMING' },
     { name: 'Feedback', href: '/feedback', icon: MessageSquare },
 ];
 
@@ -208,13 +208,23 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                                                 key={item.name}
                                                 href={item.href}
                                                 onClick={() => setSidebarOpen(false)}
-                                                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${isActive
+                                                className={`flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${isActive
                                                     ? 'bg-green-600 text-white'
                                                     : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                                                     }`}
                                             >
-                                                <item.icon className="w-5 h-5" />
-                                                {item.name}
+                                                <div className="flex items-center gap-3">
+                                                    <item.icon className="w-5 h-5" />
+                                                    {item.name}
+                                                </div>
+                                                {item.status && (
+                                                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${item.status === 'BETA'
+                                                        ? 'text-amber-500 border-amber-500'
+                                                        : 'text-blue-400 border-blue-400'
+                                                        }`}>
+                                                        {item.status}
+                                                    </span>
+                                                )}
                                             </Link>
                                         );
                                     })}
@@ -295,7 +305,7 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                                             <Link
                                                 key={item.name}
                                                 href={item.href}
-                                                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-sm font-medium ${isActive
+                                                className={`flex items-center justify-between px-4 py-3 rounded-lg transition-colors text-sm font-medium ${isActive
                                                     ? 'text-white' : 'text-green-100 hover:text-white'
                                                     }`}
                                                 style={isActive ? { backgroundColor: 'rgba(255,255,255,0.1)' } : {}}
@@ -310,8 +320,18 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                                                     }
                                                 }}
                                             >
-                                                <item.icon className="w-5 h-5" />
-                                                {item.name}
+                                                <div className="flex items-center gap-3">
+                                                    <item.icon className="w-5 h-5" />
+                                                    {item.name}
+                                                </div>
+                                                {item.status && (
+                                                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${item.status === 'BETA'
+                                                        ? 'text-amber-500 border-amber-500'
+                                                        : 'text-blue-400 border-blue-400'
+                                                        }`}>
+                                                        {item.status}
+                                                    </span>
+                                                )}
                                             </Link>
                                         );
                                     })}
