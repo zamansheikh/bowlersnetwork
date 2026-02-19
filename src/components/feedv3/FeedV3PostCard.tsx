@@ -11,6 +11,7 @@ import AutoExpandingTextarea from "../AutoExpandingTextarea";
 import PollCard from "./PollCard";
 import SharedPostPreview from "./SharedPostPreview";
 import CommentsSectionV3 from "./CommentsSectionV3";
+import FollowButton from "./FollowButton";
 import {
     FeedV3Post,
     FeedV3Comment,
@@ -398,6 +399,25 @@ export default function FeedV3PostCard({
                                 }`}>
                                 {post.post_type === 'poll' ? '📊 Poll' : '🔄 Shared'}
                             </span>
+                        )}
+
+                        {/* Follow Button */}
+                        {!isOwnPost && post.author.is_followable && (
+                            <FollowButton
+                                authorId={post.author.user_id}
+                                initialIsFollowing={post.author.is_following}
+                                isFollowable={post.author.is_followable}
+                                onFollowChange={(isFollowing) => {
+                                    // Update local post state to reflect new follow status
+                                    setLocalPost(prev => ({
+                                        ...prev,
+                                        author: {
+                                            ...prev.author,
+                                            is_following: isFollowing
+                                        }
+                                    }));
+                                }}
+                            />
                         )}
 
                         <button
