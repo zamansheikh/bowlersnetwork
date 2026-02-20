@@ -75,42 +75,50 @@ export default function GlobalHeader() {
 
     console.log('GlobalHeader render - loading:', loading, 'sponsors:', sponsors); // Debug log
 
+    const sponsorItems = (keyPrefix: string) =>
+        sponsors.map((sponsor, index) => (
+            <div
+                key={`${keyPrefix}-${sponsor.brand_id || index}`}
+                className="flex items-center justify-center bg-gray-50 rounded-full p-2 hover:bg-gray-100 transition-colors duration-200 flex-shrink-0"
+                title={sponsor.formal_name}
+            >
+                <Image
+                    src={sponsor.logo_url.trim()}
+                    alt={sponsor.formal_name}
+                    width={44}
+                    height={44}
+                    className="object-contain w-11 h-11"
+                />
+            </div>
+        ));
+
     if (loading) {
         return (
-            <div className="bg-white border-b border-gray-200 py-2 md:py-4 min-h-[60px] md:min-h-[80px]">
+            <div className="bg-white border-b border-gray-200 py-3 min-h-[72px]">
                 <style>{`
-                    .hide-scrollbar {
-                        -ms-overflow-style: none;
-                        scrollbar-width: none;
+                    @keyframes ticker-scroll {
+                        0% { transform: translateX(0); }
+                        100% { transform: translateX(-50%); }
                     }
-                    .hide-scrollbar::-webkit-scrollbar {
-                        display: none;
+                    .ticker-track {
+                        animation: ticker-scroll 20s linear infinite;
+                        display: flex;
+                        gap: 16px;
+                        width: max-content;
+                        will-change: transform;
+                    }
+                    .ticker-track:hover {
+                        animation-play-state: paused;
                     }
                 `}</style>
-                <div className="max-w-7xl mx-auto px-3 md:px-6">
-                    {/* Mobile: Stacked layout */}
-                    <div className="md:hidden flex flex-col gap-2">
-                        <div className="text-xs text-gray-500 font-medium">Business Sponsors</div>
-                        <div className="overflow-x-auto hide-scrollbar">
-                            <div className="flex items-center justify-start gap-2">
-                                {[...Array(6)].map((_, i) => (
-                                    <div key={i} className="w-8 h-8 bg-gray-200 rounded-full flex-shrink-0 animate-pulse"></div>
-                                ))}
-                            </div>
+                <div className="flex items-center gap-4 px-4 md:px-8">
+                    <div className="text-xs text-gray-500 font-semibold whitespace-nowrap flex-shrink-0">Business Sponsors</div>
+                    <div className="overflow-hidden flex-1">
+                        <div className="flex items-center gap-4">
+                            {[...Array(8)].map((_, i) => (
+                                <div key={i} className="w-11 h-11 bg-gray-200 rounded-full flex-shrink-0 animate-pulse"></div>
+                            ))}
                         </div>
-                    </div>
-
-                    {/* Desktop: Single line centered */}
-                    <div className="hidden md:flex items-center justify-center gap-3">
-                        <div className="text-xs text-gray-500 font-medium whitespace-nowrap">Business Sponsors</div>
-                        <div className="overflow-x-auto hide-scrollbar">
-                            <div className="flex items-center gap-3">
-                                {[...Array(6)].map((_, i) => (
-                                    <div key={i} className="w-10 h-10 bg-gray-200 rounded-full flex-shrink-0 animate-pulse"></div>
-                                ))}
-                            </div>
-                        </div>
-                        <div className="text-xs text-gray-500 font-medium whitespace-nowrap">Business Sponsors</div>
                     </div>
                 </div>
             </div>
@@ -119,71 +127,35 @@ export default function GlobalHeader() {
 
     // Always show the header, even if no sponsors
     return (
-        <div className="bg-white border-b border-gray-200 py-2 md:py-4 min-h-[60px] md:min-h-[80px]">
+        <div className="bg-white border-b border-gray-200 py-3 min-h-[72px]">
             <style>{`
-                .hide-scrollbar {
-                    -ms-overflow-style: none;
-                    scrollbar-width: none;
+                @keyframes ticker-scroll {
+                    0% { transform: translateX(0); }
+                    100% { transform: translateX(-50%); }
                 }
-                .hide-scrollbar::-webkit-scrollbar {
-                    display: none;
+                .ticker-track {
+                    animation: ticker-scroll 22s linear infinite;
+                    display: flex;
+                    gap: 16px;
+                    width: max-content;
+                    will-change: transform;
+                }
+                .ticker-track:hover {
+                    animation-play-state: paused;
                 }
             `}</style>
-            <div className="max-w-7xl mx-auto px-3 md:px-6">
-                {/* Mobile: Stacked layout */}
-                <div className="md:hidden flex flex-col gap-2">
-                    <div className="text-xs text-gray-500 font-medium">Business Sponsors</div>
-                    <div className="overflow-x-auto hide-scrollbar">
-                        <div className="flex items-center justify-start gap-2">
-                            {sponsors.length > 0 ? (
-                                sponsors.map((sponsor, index) => (
-                                    <div
-                                        key={sponsor.brand_id || index}
-                                        className="flex items-center justify-center bg-gray-50 rounded-full p-1.5 hover:bg-gray-100 transition-colors duration-200 flex-shrink-0"
-                                        title={sponsor.formal_name}
-                                    >
-                                        <Image
-                                            src={sponsor.logo_url.trim()}
-                                            alt={sponsor.formal_name}
-                                            width={32}
-                                            height={32}
-                                            className="object-contain w-8 h-8"
-                                        />
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="text-xs text-gray-400">No sponsors available</div>
-                            )}
+            <div className="flex items-center gap-4 px-4 md:px-8">
+                <div className="text-xs text-gray-500 font-semibold whitespace-nowrap flex-shrink-0">Business Sponsors</div>
+                <div className="overflow-hidden flex-1">
+                    {sponsors.length > 0 ? (
+                        <div className="ticker-track">
+                            {/* Render twice for seamless loop */}
+                            {sponsorItems('a')}
+                            {sponsorItems('b')}
                         </div>
-                    </div>
-                </div>
-
-                {/* Desktop: Single line centered with optional scrolling for many sponsors */}
-                <div className="hidden md:flex items-center justify-center gap-4">
-                    <div className="text-xs text-gray-500 font-medium whitespace-nowrap">Business Sponsors</div>
-                    <div className="overflow-x-auto hide-scrollbar flex-1 max-w-[600px]">
-                        <div className="flex items-center justify-center gap-3">
-                            {sponsors.length > 0 ? (
-                                sponsors.map((sponsor, index) => (
-                                    <div
-                                        key={sponsor.brand_id || index}
-                                        className="flex items-center justify-center bg-gray-50 rounded-full p-2 hover:bg-gray-100 transition-colors duration-200 flex-shrink-0"
-                                        title={sponsor.formal_name}
-                                    >
-                                        <Image
-                                            src={sponsor.logo_url.trim()}
-                                            alt={sponsor.formal_name}
-                                            width={40}
-                                            height={40}
-                                            className="object-contain w-10 h-10"
-                                        />
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="text-xs text-gray-400">No sponsors available</div>
-                            )}
-                        </div>
-                    </div>
+                    ) : (
+                        <div className="text-xs text-gray-400">No sponsors available</div>
+                    )}
                 </div>
             </div>
         </div>

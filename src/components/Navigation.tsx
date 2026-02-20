@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Home, BarChart3, MessageCircle, Settings, Package, Menu, CalendarDays, X, LogOut, Users, Trophy, Target, MessageSquare, Play, Gift, ShoppingCart, Zap, Map, Lightbulb, MapPin, Tag } from 'lucide-react';
+import { Home, BarChart3, MessageCircle, Settings, Package, Menu, CalendarDays, X, LogOut, Users, Trophy, Target, MessageSquare, Play, Gift, ShoppingCart, Zap, Map, Lightbulb, MapPin, Tag, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import GlobalHeader from '@/components/GlobalHeader';
@@ -67,6 +67,7 @@ const navigation = [
 export default function Navigation({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [collapsed, setCollapsed] = useState(false);
     const { user, signout, isLoading } = useAuth();
 
     // Public routes that don't require authentication
@@ -281,53 +282,62 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                     )}
 
                     {/* Desktop sidebar */}
-                    <div className="hidden lg:flex lg:flex-shrink-0">
-                        <div className="flex flex-col w-64 h-full">
+                    <div className={`hidden lg:flex lg:flex-shrink-0 transition-all duration-300 ${collapsed ? 'w-16' : 'w-64'}`}>
+                        <div className={`flex flex-col h-full transition-all duration-300 ${collapsed ? 'w-16' : 'w-64'}`}>
                             <div className="flex flex-col h-full border-r border-gray-800 overflow-hidden" style={{ backgroundColor: '#111B05' }}>
-                                {/* Logo */}
-                                <div className="flex items-center gap-3 px-6 py-6 border-b border-gray-800">
+                                {/* Logo + collapse toggle */}
+                                <div className={`flex items-center border-b border-gray-800 py-5 ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'}`}>
                                     <Image
                                         src="/logo/logo_for_dark.png"
                                         alt="Bowlers Network Logo"
-                                        width={40}
-                                        height={40}
+                                        width={36}
+                                        height={36}
                                         unoptimized
-                                        className="rounded"
+                                        className="rounded flex-shrink-0"
                                     />
-                                    <span className="text-xl font-bold text-white">BowlersNetwork</span>
+                                    {!collapsed && (
+                                        <span className="text-xl font-bold text-white flex-1 truncate">BowlersNetwork</span>
+                                    )}
+                                    <button
+                                        onClick={() => setCollapsed(!collapsed)}
+                                        className="flex-shrink-0 p-1 rounded text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                                        title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                                    >
+                                        {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+                                    </button>
                                 </div>
 
                                 {/* Navigation */}
-                                <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto scrollbar-thin min-h-0">
+                                <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto scrollbar-thin min-h-0">
                                     {navigation.map((item) => {
                                         const isActive = pathname === item.href;
                                         return (
                                             <Link
                                                 key={item.name}
                                                 href={item.href}
-                                                className={`flex items-center justify-between px-4 py-3 rounded-lg transition-colors text-sm font-medium ${isActive
-                                                    ? 'text-white' : 'text-green-100 hover:text-white'
-                                                    }`}
+                                                title={collapsed ? item.name : undefined}
+                                                className={`flex items-center py-2.5 rounded-lg transition-colors text-sm font-medium ${
+                                                    collapsed ? 'justify-center px-2' : 'justify-between px-3'
+                                                } ${
+                                                    isActive ? 'text-white' : 'text-green-100 hover:text-white'
+                                                }`}
                                                 style={isActive ? { backgroundColor: 'rgba(255,255,255,0.1)' } : {}}
                                                 onMouseEnter={(e) => {
-                                                    if (!isActive) {
-                                                        e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
-                                                    }
+                                                    if (!isActive) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
                                                 }}
                                                 onMouseLeave={(e) => {
-                                                    if (!isActive) {
-                                                        e.currentTarget.style.backgroundColor = '';
-                                                    }
+                                                    if (!isActive) e.currentTarget.style.backgroundColor = '';
                                                 }}
                                             >
-                                                <div className="flex items-center gap-3">
-                                                    <item.icon className="w-5 h-5" />
-                                                    {item.name}
+                                                <div className={`flex items-center ${collapsed ? '' : 'gap-3'}`}>
+                                                    <item.icon className="w-5 h-5 flex-shrink-0" />
+                                                    {!collapsed && item.name}
                                                 </div>
-                                                {item.status && (
-                                                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${item.status === 'BETA'
-                                                        ? 'text-amber-500 border-amber-500'
-                                                        : 'text-blue-400 border-blue-400'
+                                                {!collapsed && item.status && (
+                                                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
+                                                        item.status === 'BETA'
+                                                            ? 'text-amber-500 border-amber-500'
+                                                            : 'text-blue-400 border-blue-400'
                                                         }`}>
                                                         {item.status}
                                                     </span>
@@ -338,45 +348,49 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                                 </nav>
 
                                 {/* User Profile */}
-                                <div className="px-4 py-4 border-t border-gray-800">
+                                <div className="px-2 py-3 border-t border-gray-800">
                                     <Link
                                         href="/profile"
+                                        title={collapsed ? (user?.name || 'Profile') : undefined}
                                         className="block transition-colors"
                                     >
-                                        <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors">
+                                        <div className={`flex items-center p-2 rounded-lg hover:bg-white/10 transition-colors ${collapsed ? 'justify-center' : 'gap-3'}`}>
                                             {user?.profile_picture_url ? (
                                                 <Image
                                                     src={user.profile_picture_url}
                                                     alt={user?.name || "Profile"}
                                                     width={32}
                                                     height={32}
-                                                    className="w-8 h-8 rounded-full object-cover"
+                                                    className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                                                 />
                                             ) : (
-                                                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
+                                                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center flex-shrink-0">
                                                     <span className="font-medium text-sm" style={{ color: '#111B05' }}>
                                                         {user?.name ? user.name.split(' ').map((n: string) => n[0]).join('') : 'U'}
                                                     </span>
                                                 </div>
                                             )}
-                                            <div className="flex-1">
-                                                <p className="text-sm font-medium text-white">{user?.name}</p>
-                                                <span className="text-xs text-gray-400 hover:text-white">
-                                                    View Profile
-                                                </span>
-                                            </div>
+                                            {!collapsed && (
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-medium text-white truncate">{user?.name}</p>
+                                                    <span className="text-xs text-gray-400 hover:text-white">View Profile</span>
+                                                </div>
+                                            )}
                                         </div>
                                     </Link>
                                 </div>
 
                                 {/* Logout Button */}
-                                <div className="px-4 pb-4">
+                                <div className="px-2 pb-3">
                                     <button
                                         onClick={signout}
-                                        className="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-300 hover:bg-red-600 hover:text-white w-full text-sm font-medium"
+                                        title={collapsed ? 'Sign Out' : undefined}
+                                        className={`flex items-center py-2.5 rounded-lg transition-colors text-gray-300 hover:bg-red-600 hover:text-white w-full text-sm font-medium ${
+                                            collapsed ? 'justify-center px-2' : 'gap-3 px-3'
+                                        }`}
                                     >
-                                        <LogOut className="w-5 h-5" />
-                                        Sign Out
+                                        <LogOut className="w-5 h-5 flex-shrink-0" />
+                                        {!collapsed && 'Sign Out'}
                                     </button>
                                 </div>
                             </div>
