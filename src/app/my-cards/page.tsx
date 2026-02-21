@@ -67,7 +67,7 @@ export default function MyCardsPage() {
             <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
           </div>
         ) : (
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 place-items-center">
+          <div className="mt-8 grid gap-6 place-items-center" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
             {myCards.length > 0 ? (
               myCards.map((card) => (
                 <div
