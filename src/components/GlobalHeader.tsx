@@ -94,7 +94,7 @@ export default function GlobalHeader() {
 
     if (loading) {
         return (
-            <div className="bg-white border-b border-gray-200 py-3 min-h-[72px]">
+            <div className="bg-white border-b border-gray-200 py-3 min-h-[72px] flex items-center justify-center">
                 <style>{`
                     @keyframes ticker-scroll {
                         0% { transform: translateX(0); }
@@ -111,9 +111,9 @@ export default function GlobalHeader() {
                         animation-play-state: paused;
                     }
                 `}</style>
-                <div className="flex items-center gap-4 px-4 md:px-8">
+                <div className="flex items-center justify-center gap-4 px-4 md:px-8 w-full max-w-7xl">
                     <div className="text-xs text-gray-500 font-semibold whitespace-nowrap flex-shrink-0">Business Sponsors</div>
-                    <div className="overflow-hidden flex-1">
+                    <div className="overflow-hidden w-full" style={{ maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)' }}>
                         <div className="flex items-center gap-4">
                             {[...Array(8)].map((_, i) => (
                                 <div key={i} className="w-11 h-11 bg-gray-200 rounded-full flex-shrink-0 animate-pulse"></div>
@@ -127,7 +127,7 @@ export default function GlobalHeader() {
 
     // Always show the header, even if no sponsors
     return (
-        <div className="bg-white border-b border-gray-200 py-3 min-h-[72px]">
+        <div className="bg-white border-b border-gray-200 py-3 min-h-[72px] flex items-center justify-center">
             <style>{`
                 @keyframes ticker-scroll {
                     0% { transform: translateX(0); }
@@ -136,6 +136,7 @@ export default function GlobalHeader() {
                 .ticker-track {
                     animation: ticker-scroll 22s linear infinite;
                     display: flex;
+                    align-items: center;
                     gap: 16px;
                     width: max-content;
                     will-change: transform;
@@ -144,9 +145,9 @@ export default function GlobalHeader() {
                     animation-play-state: paused;
                 }
             `}</style>
-            <div className="flex items-center gap-4 px-4 md:px-8">
+            <div className="flex items-center justify-center gap-4 px-4 md:px-8 w-full max-w-7xl">
                 <div className="text-xs text-gray-500 font-semibold whitespace-nowrap flex-shrink-0">Business Sponsors</div>
-                <div className="overflow-hidden flex-1">
+                <div className="overflow-hidden w-full" style={{ maskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)' }}>
                     {sponsors.length > 0 ? (
                         <div className="ticker-track">
                             {/* Render twice for seamless loop */}

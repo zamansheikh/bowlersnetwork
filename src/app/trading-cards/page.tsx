@@ -86,6 +86,30 @@ export default function TradingCardsPage() {
     {}
   );
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [cardOffset, setCardOffset] = useState(340);
+  const [maxVisible, setMaxVisible] = useState(2);
+
+  useEffect(() => {
+    const updateLayout = () => {
+      const w = window.innerWidth;
+      if (w < 640) {
+        setCardOffset(160);
+        setMaxVisible(1);
+      } else if (w < 900) {
+        setCardOffset(200);
+        setMaxVisible(1);
+      } else if (w < 1280) {
+        setCardOffset(260);
+        setMaxVisible(2);
+      } else {
+        setCardOffset(340);
+        setMaxVisible(2);
+      }
+    };
+    updateLayout();
+    window.addEventListener('resize', updateLayout);
+    return () => window.removeEventListener('resize', updateLayout);
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -167,13 +191,13 @@ export default function TradingCardsPage() {
       list.map((card) =>
         card.metadata.card_id === cardId
           ? {
-              ...card,
-              metadata: {
-                ...card.metadata,
-                is_collected_by_viewer: isCollected,
-                collections_count: collectionsCount,
-              },
-            }
+            ...card,
+            metadata: {
+              ...card.metadata,
+              is_collected_by_viewer: isCollected,
+              collections_count: collectionsCount,
+            },
+          }
           : card
       );
 
@@ -269,11 +293,10 @@ export default function TradingCardsPage() {
                 setActiveTab('feed');
                 setCurrentIndex(0);
               }}
-              className={`px-6 py-4 font-medium text-sm transition-colors border-b-2 ${
-                activeTab === 'feed'
-                  ? 'text-green-600 border-b-green-600'
-                  : 'text-gray-600 border-b-transparent hover:text-gray-900'
-              }`}
+              className={`px-6 py-4 font-medium text-sm transition-colors border-b-2 ${activeTab === 'feed'
+                ? 'text-green-600 border-b-green-600'
+                : 'text-gray-600 border-b-transparent hover:text-gray-900'
+                }`}
             >
               Cards
             </button>
@@ -282,11 +305,10 @@ export default function TradingCardsPage() {
                 setActiveTab('collection');
                 setCurrentIndex(0);
               }}
-              className={`px-6 py-4 font-medium text-sm transition-colors border-b-2 ${
-                activeTab === 'collection'
-                  ? 'text-green-600 border-b-green-600'
-                  : 'text-gray-600 border-b-transparent hover:text-gray-900'
-              }`}
+              className={`px-6 py-4 font-medium text-sm transition-colors border-b-2 ${activeTab === 'collection'
+                ? 'text-green-600 border-b-green-600'
+                : 'text-gray-600 border-b-transparent hover:text-gray-900'
+                }`}
             >
               My Collection
             </button>
@@ -359,19 +381,18 @@ export default function TradingCardsPage() {
                 const absOffset = Math.abs(offset);
                 const isActive = index === currentIndex;
 
-                // Hide cards that are too far away to improve performance
-                if (absOffset > 3) return null;
+                // Hide cards that are too far away for current screen size
+                if (absOffset > maxVisible) return null;
 
                 return (
                   <div
                     key={card.metadata.card_id}
                     className="absolute transition-all duration-500 ease-out cursor-pointer"
                     style={{
-                      transform: `translateX(${offset * 340}px) scale(${
-                        1 - absOffset * 0.15
-                      }) perspective(1000px) rotateY(${offset * -5}deg)`,
+                      transform: `translateX(${offset * cardOffset}px) scale(${1 - absOffset * 0.15
+                        }) perspective(1000px) rotateY(${offset * -5}deg)`,
                       zIndex: 50 - absOffset,
-                      opacity: absOffset > 2 ? 0 : 1 - absOffset * 0.2,
+                      opacity: absOffset > maxVisible ? 0 : 1 - absOffset * 0.2,
                       pointerEvents: "auto",
                       filter: isActive
                         ? "drop-shadow(0 0 20px rgba(74, 222, 128, 0.3))"
@@ -391,25 +412,23 @@ export default function TradingCardsPage() {
                       onMouseLeave={() => setHoveredCard(null)}
                     >
                       <div className="relative" style={{ width: "320px", height: "450px" }}>
-                      {/* Shadow Effect */}
-                      <div
-                        className={`absolute -inset-3 rounded-3xl bg-gradient-to-br from-green-400/20 to-blue-500/20 blur-2xl transition-all duration-500 pointer-events-none -z-10 ${
-                          isHovered ? "opacity-100" : "opacity-0"
-                        }`}
-                      />
+                        {/* Shadow Effect */}
+                        <div
+                          className={`absolute -inset-3 rounded-3xl bg-gradient-to-br from-green-400/20 to-blue-500/20 blur-2xl transition-all duration-500 pointer-events-none -z-10 ${isHovered ? "opacity-100" : "opacity-0"
+                            }`}
+                        />
 
-                      {/* Card iframe - main element */}
-                      <iframe
-                        src={getAuthenticatedUrl(card.card_html_url)}
-                        className={`w-full h-full rounded-xl shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 block border-0 ${
-                          isHovered ? "scale-105" : "scale-100"
-                        }`}
-                        title={`Card ${card.metadata.card_id}`}
-                        loading="lazy"
-                        scrolling="no"
-                        style={{ overflow: "hidden" }}
-                        sandbox="allow-scripts allow-same-origin allow-forms"
-                      />
+                        {/* Card iframe - main element */}
+                        <iframe
+                          src={getAuthenticatedUrl(card.card_html_url)}
+                          className={`w-full h-full rounded-xl shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 block border-0 ${isHovered ? "scale-105" : "scale-100"
+                            }`}
+                          title={`Card ${card.metadata.card_id}`}
+                          loading="lazy"
+                          scrolling="no"
+                          style={{ overflow: "hidden" }}
+                          sandbox="allow-scripts allow-same-origin allow-forms"
+                        />
                       </div>
 
                       {/* Collect/Uncollect Button */}
@@ -421,15 +440,13 @@ export default function TradingCardsPage() {
                             card.metadata.is_collected_by_viewer
                           );
                         }}
-                        className={`mt-3 px-4 py-2 rounded-full text-xs font-semibold shadow-lg transition ${
-                          card.metadata.is_collected_by_viewer
-                            ? "bg-gray-900 text-white hover:bg-gray-800"
-                            : "bg-green-600 text-white hover:bg-green-700"
-                        } ${
-                          collectingIds[card.metadata.card_id]
+                        className={`mt-3 px-4 py-2 rounded-full text-xs font-semibold shadow-lg transition ${card.metadata.is_collected_by_viewer
+                          ? "bg-gray-900 text-white hover:bg-gray-800"
+                          : "bg-green-600 text-white hover:bg-green-700"
+                          } ${collectingIds[card.metadata.card_id]
                             ? "opacity-70 cursor-not-allowed"
                             : ""
-                        }`}
+                          }`}
                         disabled={collectingIds[card.metadata.card_id]}
                       >
                         {collectingIds[card.metadata.card_id]
@@ -585,16 +602,15 @@ export default function TradingCardsPage() {
                       const step = Math.ceil(totalCards / 7);
                       const cardIdx = dotIdx * step;
                       const isActive = currentIndex >= cardIdx && currentIndex < cardIdx + step;
-                      
+
                       return (
                         <button
                           key={dotIdx}
                           onClick={() => setCurrentIndex(Math.min(cardIdx, totalCards - 1))}
-                          className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all flex-shrink-0 ${
-                            isActive
-                              ? "w-4 sm:w-6 bg-green-500"
-                              : "bg-gray-300 hover:bg-gray-400"
-                          }`}
+                          className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all flex-shrink-0 ${isActive
+                            ? "w-4 sm:w-6 bg-green-500"
+                            : "bg-gray-300 hover:bg-gray-400"
+                            }`}
                         />
                       );
                     })
@@ -604,11 +620,10 @@ export default function TradingCardsPage() {
                       <button
                         key={idx}
                         onClick={() => setCurrentIndex(idx)}
-                        className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all flex-shrink-0 ${
-                          idx === currentIndex
-                            ? "w-4 sm:w-6 bg-green-500"
-                            : "bg-gray-300 hover:bg-gray-400"
-                        }`}
+                        className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all flex-shrink-0 ${idx === currentIndex
+                          ? "w-4 sm:w-6 bg-green-500"
+                          : "bg-gray-300 hover:bg-gray-400"
+                          }`}
                       />
                     ))
                   )}

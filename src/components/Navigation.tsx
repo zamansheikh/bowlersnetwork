@@ -178,9 +178,9 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                 <div className="flex h-screen bg-gray-100">
                     {/* Mobile sidebar */}
                     {sidebarOpen && (
-                        <div className="fixed inset-0 z-40 lg:hidden">
+                        <div className="fixed inset-0 z-[60] lg:hidden">
                             <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
-                            <div className="relative flex flex-col w-64 h-full bg-gray-900 shadow-xl overflow-y-auto">
+                            <div className="fixed inset-y-0 left-0 flex flex-col w-64 h-full bg-gray-900 shadow-xl overflow-y-auto z-[61]">
                                 <div className="flex items-center justify-between px-4 py-4 border-b border-gray-700 flex-shrink-0">
                                     <div className="flex items-center gap-3">
                                         <Image
@@ -286,21 +286,21 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                         <div className={`flex flex-col h-full transition-all duration-300 ${collapsed ? 'w-16' : 'w-64'}`}>
                             <div className="flex flex-col h-full border-r border-gray-800 overflow-hidden" style={{ backgroundColor: '#111B05' }}>
                                 {/* Logo + collapse toggle */}
-                                <div className={`flex items-center border-b border-gray-800 py-5 ${collapsed ? 'justify-center px-2' : 'gap-3 px-4'}`}>
+                                <div className={`flex border-b border-gray-800 ${collapsed ? 'flex-col items-center justify-center py-3 gap-3' : 'items-center py-5 gap-2 px-3'}`}>
                                     <Image
                                         src="/logo/logo_for_dark.png"
                                         alt="Bowlers Network Logo"
-                                        width={36}
-                                        height={36}
+                                        width={32}
+                                        height={32}
                                         unoptimized
                                         className="rounded flex-shrink-0"
                                     />
                                     {!collapsed && (
-                                        <span className="text-xl font-bold text-white flex-1 truncate">BowlersNetwork</span>
+                                        <span className="text-lg font-bold text-white flex-1 truncate min-w-0">BowlersNetwork</span>
                                     )}
                                     <button
                                         onClick={() => setCollapsed(!collapsed)}
-                                        className="flex-shrink-0 p-1 rounded text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                                        className="flex-shrink-0 p-1.5 rounded-md text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
                                         title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                                     >
                                         {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -316,11 +316,9 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                                                 key={item.name}
                                                 href={item.href}
                                                 title={collapsed ? item.name : undefined}
-                                                className={`flex items-center py-2.5 rounded-lg transition-colors text-sm font-medium ${
-                                                    collapsed ? 'justify-center px-2' : 'justify-between px-3'
-                                                } ${
-                                                    isActive ? 'text-white' : 'text-green-100 hover:text-white'
-                                                }`}
+                                                className={`flex items-center py-2.5 rounded-lg transition-colors text-sm font-medium ${collapsed ? 'justify-center px-2' : 'justify-between px-3'
+                                                    } ${isActive ? 'text-white' : 'text-green-100 hover:text-white'
+                                                    }`}
                                                 style={isActive ? { backgroundColor: 'rgba(255,255,255,0.1)' } : {}}
                                                 onMouseEnter={(e) => {
                                                     if (!isActive) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
@@ -334,10 +332,9 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                                                     {!collapsed && item.name}
                                                 </div>
                                                 {!collapsed && item.status && (
-                                                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
-                                                        item.status === 'BETA'
-                                                            ? 'text-amber-500 border-amber-500'
-                                                            : 'text-blue-400 border-blue-400'
+                                                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${item.status === 'BETA'
+                                                        ? 'text-amber-500 border-amber-500'
+                                                        : 'text-blue-400 border-blue-400'
                                                         }`}>
                                                         {item.status}
                                                     </span>
@@ -385,9 +382,8 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                                     <button
                                         onClick={signout}
                                         title={collapsed ? 'Sign Out' : undefined}
-                                        className={`flex items-center py-2.5 rounded-lg transition-colors text-gray-300 hover:bg-red-600 hover:text-white w-full text-sm font-medium ${
-                                            collapsed ? 'justify-center px-2' : 'gap-3 px-3'
-                                        }`}
+                                        className={`flex items-center py-2.5 rounded-lg transition-colors text-gray-300 hover:bg-red-600 hover:text-white w-full text-sm font-medium ${collapsed ? 'justify-center px-2' : 'gap-3 px-3'
+                                            }`}
                                     >
                                         <LogOut className="w-5 h-5 flex-shrink-0" />
                                         {!collapsed && 'Sign Out'}
