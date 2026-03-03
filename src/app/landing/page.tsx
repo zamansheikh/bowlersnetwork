@@ -154,13 +154,13 @@ export default function Landing2Page() {
     }, []);
 
     const teamMembers = [
-        { src: '/team_headshots/Nahian Ferdouse.webp', name: 'Nahian Ferdouse', role: 'Director of Business', position: 'top' },
-        { src: '/team_headshots/mumit_prottoy.webp', name: 'Mumit Prottoy', role: 'Director of Technology', position: 'top' },
-        { src: '/team_headshots/Shuvo Headshot.webp', name: 'Asraful Alam Shuvo', role: 'Lead Product Experience & Growth', position: 'center' },
-        { src: '/team_headshots/Azmain Hossain Sabbir-Photo.webp', name: 'Azmain Sabbir', role: 'Brand Marketing Manager', position: 'center' },
-        { src: '/team_headshots/Sadia Durdana Adrita.webp', name: 'Sadia Durdana Adrita', role: 'Product Manager', position: 'center' },
-        { src: '/team_headshots/Hasibul Hasan Pranto.webp', name: 'Pranto', role: 'Creative Designer', position: 'top' },
-        { src: '/team_headshots/Brittany Kolatzny-Headshot.webp', name: 'Brittany Kolatzny', role: 'Director of Marketing', position: 'center' },
+        { src: '/teams/Nahian Ferdouse.webp', name: 'Nahian Ferdouse', role: 'Director of Business' },
+        { src: '/teams/Mumit Prottoy.webp', name: 'Mumit Prottoy', role: 'Director of Technology' },
+        { src: '/teams/Brittany Kolatzny.webp', name: 'Brittany Kolatzny', role: 'Director of Marketing' },
+        { src: '/teams/Shuvo bhai.webp', name: 'Asraful Alam Shuvo', role: 'Lead Product Experience\n& Growth' },
+        { src: '/teams/Azmain Hossain Sabbir.webp', name: 'Azmain Sabbir', role: 'Brand Marketing Manager' },
+        { src: '/teams/Sadia Durdana Adrita.webp', name: 'Sadia Durdana Adrita', role: 'Product Manager' },
+        { src: '/teams/Hasibul Hasan Pranto.webp', name: 'Hasibul Hasan Pranto', role: 'Creative Designer' },
     ];
 
     const boardMembers = [
@@ -1493,61 +1493,67 @@ export default function Landing2Page() {
                 </div>
             </section>
 
-            {/* Our People, Our Power Section */}
-            <section className="py-12 md:py-20 px-4 md:px-8 bg-white">
-                <div className="max-w-7xl mx-auto">
+            {/* Meet The Team Section */}
+            <section className="py-12 md:py-20 px-4 md:px-8 bg-white relative overflow-hidden">
+                {/* Background Grid & Shapes */}
+                <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+                    <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'linear-gradient(to right, #86D864 1px, transparent 1px), linear-gradient(to bottom, #86D864 1px, transparent 1px)', backgroundSize: '60px 60px' }}></div>
+                    {/* Top left decorative circles */}
+                    <div className="absolute -top-32 -left-16 w-64 h-64 rounded-full bg-gray-50 opacity-80"></div>
+                    <div className="absolute top-16 -left-20 w-48 h-48 rounded-full border-[10px] border-gray-50"></div>
+                    {/* Top right decorative shape */}
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-[#dcfce7] rounded-bl-[100px] opacity-40"></div>
+                    {/* Bottom right decorative shape */}
+                    <div className="absolute -bottom-32 -right-16 w-80 h-80 rounded-full border-[24px] border-[#dcfce7] opacity-40"></div>
+                </div>
+
+                <div className="max-w-7xl mx-auto relative z-10">
                     {/* Header */}
                     <div className="text-center mb-12 md:mb-16">
-                        <h2 className="text-4xl md:text-6xl font-black text-gray-900 mb-4">
-                            Our People, Our Power
+                        <h2 className="text-4xl md:text-5xl font-black text-[#86D864] uppercase tracking-wide">
+                            Meet The Team
                         </h2>
-                        <p className="text-base md:text-lg text-gray-600">
-                            Dedicated professionals bringing innovation, passion, and teamwork to every roll.
-                        </p>
                     </div>
 
-                    {/* Team Members Grid - Asymmetric Layout */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                        {/* Left: First team member taking up 2 rows */}
-                        <div key={teamMembers[0].src} className="md:row-span-2 rounded-2xl overflow-hidden shadow-lg flex flex-col h-full">
-                            <div className="flex-1 h-96 md:h-full flex justify-center bg-gray-100">
-                                <Image
-                                    src={teamMembers[0].src}
-                                    alt={teamMembers[0].name}
-                                    width={300}
-                                    height={500}
-                                    unoptimized
-                                    className="h-full w-full object-cover"
-                                    style={{ objectPosition: teamMembers[0].position || 'center' }}
-                                />
-                            </div>
-                            <div className="bg-[#86D864] text-white p-5 flex-shrink-0">
-                                <h3 className="font-black text-base md:text-lg">{teamMembers[0].name}</h3>
-                                <p className="text-xs md:text-sm font-semibold">{teamMembers[0].role ?? 'Team Member'}</p>
-                            </div>
+                    {/* Team Members Layout */}
+                    <div className="flex flex-col items-center gap-12 md:gap-16">
+                        {/* Top Row: 3 Members */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 md:gap-12 w-full max-w-4xl justify-center">
+                            {teamMembers.slice(0, 3).map((member) => (
+                                <div key={member.name} className="flex flex-col items-center text-center z-10">
+                                    <div className="w-48 h-48 md:w-52 md:h-52 rounded-full overflow-hidden mb-4 bg-gray-100 flex-shrink-0 relative border-[10px] border-white shadow-sm">
+                                        <Image
+                                            src={member.src}
+                                            alt={member.name}
+                                            fill
+                                            unoptimized
+                                            className="object-cover object-top"
+                                        />
+                                    </div>
+                                    <h3 className="font-black text-[#86D864] text-sm md:text-base uppercase tracking-wide px-2">{member.name}</h3>
+                                    <p className="text-gray-900 font-bold text-xs md:text-sm whitespace-pre-line mt-1">{member.role}</p>
+                                </div>
+                            ))}
                         </div>
 
-
-                        {/* Right: 3 columns grid for remaining team members */}
-                        {teamMembers.slice(1).map((member) => (
-                            <div key={member.src} className="rounded-xl overflow-hidden shadow-lg">
-                                <div className="h-64 flex justify-center">
-                                    <Image
-                                        src={member.src}
-                                        alt={member.name}
-                                        width={400}
-                                        height={400}
-                                        unoptimized
-                                        className="h-full w-auto rounded-xl object-cover"
-                                        style={{ objectPosition: member.position || 'center' }}
-                                    />
+                        {/* Bottom Row: 4 Members */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 w-full max-w-6xl justify-center">
+                            {teamMembers.slice(3).map((member) => (
+                                <div key={member.name} className="flex flex-col items-center text-center z-10">
+                                    <div className="w-48 h-48 md:w-52 md:h-52 rounded-full overflow-hidden mb-4 bg-gray-100 flex-shrink-0 relative border-[10px] border-white shadow-sm">
+                                        <Image
+                                            src={member.src}
+                                            alt={member.name}
+                                            fill
+                                            unoptimized
+                                            className="object-cover object-top"
+                                        />
+                                    </div>
+                                    <h3 className="font-black text-[#86D864] text-sm md:text-base uppercase tracking-wide px-2">{member.name}</h3>
+                                    <p className="text-gray-900 font-bold text-xs md:text-sm whitespace-pre-line mt-1">{member.role}</p>
                                 </div>
-                                <div className="bg-[#86D864] text-white p-4">
-                                    <h3 className="font-black text-lg">{member.name}</h3>
-                                    <p className="text-sm font-semibold">{member.role ?? 'Team Member'}</p>
-                                </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
                 </div>
             </section>
