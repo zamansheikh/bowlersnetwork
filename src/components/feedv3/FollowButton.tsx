@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, UserPlus, UserCheck } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 
 interface FollowButtonProps {
@@ -62,19 +62,16 @@ export default function FollowButton({
         <button
             onClick={handleFollow}
             disabled={isLoading}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 border ${isFollowing
-                    ? "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100 hover:text-red-500 hover:border-red-200"
-                    : "bg-green-50 text-green-600 border-green-200 hover:bg-green-100 hover:border-green-300"
+            className={`inline-flex items-center justify-center border border-solid rounded-[33554400px] text-[14px] leading-5 transition-colors duration-200 disabled:opacity-70 ${isFollowing
+                    ? "border-[#d1d5db] text-[#4a5565] hover:bg-gray-100"
+                    : "border-[#00c950] text-[#00a63e] hover:bg-[#f0fff4]"
                 } ${className}`}
         >
             {isLoading ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : isFollowing ? (
-                <UserCheck className="w-3.5 h-3.5" />
             ) : (
-                <UserPlus className="w-3.5 h-3.5" />
+                <span>{isFollowing ? "Following" : "+ Follow"}</span>
             )}
-            <span className="hidden sm:inline">{isFollowing ? "Following" : "Follow"}</span>
         </button>
     );
 }
