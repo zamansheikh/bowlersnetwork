@@ -180,11 +180,11 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                     {sidebarOpen && (
                         <div className="fixed inset-0 z-[60] lg:hidden">
                             <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
-                            <div className="fixed inset-y-0 left-0 flex flex-col w-64 h-full bg-gray-900 shadow-xl overflow-y-auto z-[61]">
-                                <div className="flex items-center justify-between px-4 py-4 border-b border-gray-700 flex-shrink-0">
+                            <div className="fixed inset-y-0 left-0 flex flex-col w-64 h-full bg-white shadow-xl overflow-y-auto z-[61]">
+                                <div className="flex items-center justify-between px-4 py-4 border-b border-[#f3f4f6] flex-shrink-0">
                                     <div className="flex items-center gap-3">
                                         <Image
-                                            src="/logo/logo_for_dark.png"
+                                            src="/logo/logo.png"
                                             alt="Bowlers Network Logo"
                                             width={32}
                                             height={32}
@@ -192,11 +192,11 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                                             className="rounded"
                                         />
                                         <span className="text-xl font-bold">
-                                            <span className="text-white">Bowlers </span>
-                                            <span className="text-green-400">Network</span>
+                                            <span className="text-[#1e2939]">Bowlers </span>
+                                            <span className="text-[#1e2939]">Network</span>
                                         </span>
                                     </div>
-                                    <button onClick={() => setSidebarOpen(false)} className="p-2 text-gray-400 hover:text-gray-300">
+                                    <button onClick={() => setSidebarOpen(false)} className="p-2 text-gray-500 hover:text-gray-900">
                                         <X className="w-6 h-6" />
                                     </button>
                                 </div>
@@ -209,12 +209,13 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                                                 key={item.name}
                                                 href={item.href}
                                                 onClick={() => setSidebarOpen(false)}
-                                                className={`flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${isActive
-                                                    ? 'bg-green-600 text-white'
-                                                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                                                className={`flex items-center justify-between px-3 py-2 rounded-xl transition-all border border-transparent ${isActive
+                                                        ? 'bg-gradient-to-r from-[rgba(81,69,205,0.1)] to-[rgba(124,111,232,0.05)] text-[#5145cd] shadow-[0_1px_3px_rgba(0,0,0,0.1)] relative'
+                                                        : 'text-[#364153] hover:bg-gray-50 hover:text-[#1e2939]'
                                                     }`}
                                             >
-                                                <div className="flex items-center gap-3">
+                                                {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[24px] w-[4px] bg-gradient-to-b from-[#5145cd] to-[#7c6fe8] rounded-[33554400px]" />}
+                                                <div className="flex items-center gap-3 relative z-10">
                                                     <item.icon className="w-5 h-5" />
                                                     {item.name}
                                                 </div>
@@ -232,13 +233,13 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                                 </nav>
 
                                 {/* User Profile */}
-                                <div className="px-4 py-4 border-t border-gray-700">
+                                <div className="px-4 py-4 border-t border-[#f3f4f6]">
                                     <Link
                                         href="/profile"
                                         onClick={() => setSidebarOpen(false)}
                                         className="block transition-colors"
                                     >
-                                        <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors">
+                                        <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 transition-colors">
                                             {user?.profile_picture_url ? (
                                                 <Image
                                                     src={user.profile_picture_url}
@@ -248,15 +249,15 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                                                     className="w-8 h-8 rounded-full object-cover"
                                                 />
                                             ) : (
-                                                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
-                                                    <span className="font-medium text-sm text-gray-900">
+                                                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                                                    <span className="font-medium text-sm text-[#1e2939]">
                                                         {user?.name ? user.name.split(' ').map((n: string) => n[0]).join('') : 'U'}
                                                     </span>
                                                 </div>
                                             )}
                                             <div className="flex-1">
-                                                <p className="text-sm font-medium text-white">{user?.name}</p>
-                                                <span className="text-xs text-gray-400">
+                                                <p className="text-sm font-medium text-[#1e2939]">{user?.name}</p>
+                                                <span className="text-xs text-[#364153]">
                                                     View Profile
                                                 </span>
                                             </div>
@@ -271,7 +272,7 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                                             signout();
                                             setSidebarOpen(false);
                                         }}
-                                        className="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-300 hover:bg-red-600 hover:text-white w-full text-sm font-medium"
+                                        className="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-[#364153] hover:bg-red-50 hover:text-red-600 w-full text-sm font-medium"
                                     >
                                         <LogOut className="w-5 h-5" />
                                         Sign Out
@@ -284,11 +285,11 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                     {/* Desktop sidebar */}
                     <div className={`hidden lg:flex lg:flex-shrink-0 transition-all duration-300 ${collapsed ? 'w-16' : 'w-64'}`}>
                         <div className={`flex flex-col h-full transition-all duration-300 ${collapsed ? 'w-16' : 'w-64'}`}>
-                            <div className="flex flex-col h-full border-r border-gray-800 overflow-hidden" style={{ backgroundColor: '#111B05' }}>
+                            <div className="flex flex-col h-full border-r border-[#f3f4f6] overflow-hidden bg-white">
                                 {/* Logo + collapse toggle */}
-                                <div className={`flex border-b border-gray-800 ${collapsed ? 'flex-col items-center justify-center py-3 gap-3' : 'items-center py-5 gap-2 px-3'}`}>
+                                <div className={`flex border-b border-[#f3f4f6] ${collapsed ? 'flex-col items-center justify-center py-3 gap-3' : 'items-center py-5 gap-2 px-3'}`}>
                                     <Image
-                                        src="/logo/logo_for_dark.png"
+                                        src="/logo/logo.png"
                                         alt="Bowlers Network Logo"
                                         width={32}
                                         height={32}
@@ -296,11 +297,11 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                                         className="rounded flex-shrink-0"
                                     />
                                     {!collapsed && (
-                                        <span className="text-lg font-bold text-white flex-1 truncate min-w-0">BowlersNetwork</span>
+                                        <span className="text-lg font-bold text-[#1e2939] flex-1 truncate min-w-0">BowlersNetwork</span>
                                     )}
                                     <button
                                         onClick={() => setCollapsed(!collapsed)}
-                                        className="flex-shrink-0 p-1.5 rounded-md text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                                        className="flex-shrink-0 p-1.5 rounded-md text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors"
                                         title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                                     >
                                         {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -316,18 +317,19 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                                                 key={item.name}
                                                 href={item.href}
                                                 title={collapsed ? item.name : undefined}
-                                                className={`flex items-center py-2.5 rounded-lg transition-colors text-sm font-medium ${collapsed ? 'justify-center px-2' : 'justify-between px-3'
-                                                    } ${isActive ? 'text-white' : 'text-green-100 hover:text-white'
+                                                className={`flex items-center py-2.5 rounded-xl transition-all text-sm font-medium border border-transparent ${collapsed ? 'justify-center px-2' : 'justify-between px-3'
+                                                    } ${isActive ? 'text-[#5145cd] bg-gradient-to-r from-[rgba(81,69,205,0.1)] to-[rgba(124,111,232,0.05)] shadow-[0_1px_3px_rgba(0,0,0,0.1)] relative' : 'text-[#364153] hover:bg-gray-50'
                                                     }`}
-                                                style={isActive ? { backgroundColor: 'rgba(255,255,255,0.1)' } : {}}
+                                                style={{}}
                                                 onMouseEnter={(e) => {
-                                                    if (!isActive) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                                                    if (!isActive) e.currentTarget.style.backgroundColor = '#f3f4f6';
                                                 }}
                                                 onMouseLeave={(e) => {
                                                     if (!isActive) e.currentTarget.style.backgroundColor = '';
                                                 }}
                                             >
-                                                <div className={`flex items-center ${collapsed ? '' : 'gap-3'}`}>
+                                                {isActive && !collapsed && <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[24px] w-[4px] bg-gradient-to-b from-[#5145cd] to-[#7c6fe8] rounded-[33554400px]" />}
+                                                <div className={`flex items-center ${collapsed ? '' : 'gap-3 ml-1'}`}>
                                                     <item.icon className="w-5 h-5 flex-shrink-0" />
                                                     {!collapsed && item.name}
                                                 </div>
@@ -345,13 +347,13 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                                 </nav>
 
                                 {/* User Profile */}
-                                <div className="px-2 py-3 border-t border-gray-800">
+                                <div className="px-2 py-3 border-t border-[#f3f4f6]">
                                     <Link
                                         href="/profile"
                                         title={collapsed ? (user?.name || 'Profile') : undefined}
                                         className="block transition-colors"
                                     >
-                                        <div className={`flex items-center p-2 rounded-lg hover:bg-white/10 transition-colors ${collapsed ? 'justify-center' : 'gap-3'}`}>
+                                        <div className={`flex items-center p-2 rounded-lg hover:bg-gray-100 transition-colors ${collapsed ? 'justify-center' : 'gap-3'}`}>
                                             {user?.profile_picture_url ? (
                                                 <Image
                                                     src={user.profile_picture_url}
@@ -361,16 +363,16 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                                                     className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                                                 />
                                             ) : (
-                                                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center flex-shrink-0">
-                                                    <span className="font-medium text-sm" style={{ color: '#111B05' }}>
+                                                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                                                    <span className="font-medium text-sm text-[#1e2939]">
                                                         {user?.name ? user.name.split(' ').map((n: string) => n[0]).join('') : 'U'}
                                                     </span>
                                                 </div>
                                             )}
                                             {!collapsed && (
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-sm font-medium text-white truncate">{user?.name}</p>
-                                                    <span className="text-xs text-gray-400 hover:text-white">View Profile</span>
+                                                    <p className="text-sm font-medium text-[#1e2939] truncate">{user?.name}</p>
+                                                    <span className="text-xs text-[#364153] hover:text-[#1e2939]">View Profile</span>
                                                 </div>
                                             )}
                                         </div>
@@ -382,7 +384,7 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                                     <button
                                         onClick={signout}
                                         title={collapsed ? 'Sign Out' : undefined}
-                                        className={`flex items-center py-2.5 rounded-lg transition-colors text-gray-300 hover:bg-red-600 hover:text-white w-full text-sm font-medium ${collapsed ? 'justify-center px-2' : 'gap-3 px-3'
+                                        className={`flex items-center py-2.5 rounded-lg transition-colors text-[#364153] hover:bg-red-50 hover:text-red-600 w-full text-sm font-medium ${collapsed ? 'justify-center px-2' : 'gap-3 px-3'
                                             }`}
                                     >
                                         <LogOut className="w-5 h-5 flex-shrink-0" />
@@ -396,14 +398,14 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                     {/* Main content */}
                     <div className="flex flex-col flex-1 overflow-hidden bg-gray-50">
                         {/* Mobile header */}
-                        <div className="lg:hidden border-b border-gray-800 px-4 py-3 flex items-center justify-between" style={{ backgroundColor: '#111B05' }}>
-                            <button onClick={() => setSidebarOpen(true)} className="p-2 text-gray-300 hover:text-white">
+                        <div className="lg:hidden border-b border-[#f3f4f6] px-4 py-3 flex items-center justify-between" style={{ backgroundColor: '#ffffff' }}>
+                            <button onClick={() => setSidebarOpen(true)} className="p-2 text-gray-500 hover:text-gray-900">
                                 <Menu className="w-6 h-6" />
                             </button>
-                            <span className="text-lg font-bold text-white">BowlersNetwork</span>
+                            <span className="text-lg font-bold text-[#1e2939]">BowlersNetwork</span>
                             <button
                                 onClick={signout}
-                                className="p-2 text-gray-300 hover:text-red-400 transition-colors"
+                                className="p-2 text-gray-500 hover:text-red-500 transition-colors"
                                 title="Sign out"
                             >
                                 <LogOut className="w-5 h-5" />
