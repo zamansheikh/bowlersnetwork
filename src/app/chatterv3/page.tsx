@@ -1,20 +1,19 @@
 'use client';
 
-import { useState } from 'react';
-import { Bell, ChevronDown, ChevronUp, MessageCircle, Search, Share2, UserCircle2 } from 'lucide-react';
-
-type DiscussionCard = {
-    id: number;
-    label: string;
-    title: string;
-    excerpt: string;
-    author: string;
-    posted: string;
-    score: number;
-    viewerVote: boolean | null;
-    comments: number;
-    imageUrl: string;
-};
+import { FormEvent, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import {
+    Bell,
+    ChevronDown,
+    ChevronUp,
+    MessageCircle,
+    Search,
+    Share2,
+    UserCircle2,
+    X,
+} from 'lucide-react';
+import { api } from '@/lib/api';
+import { Discussion, Topic } from '@/types/chatter';
 
 type SidebarArticle = {
     id: number;
@@ -23,86 +22,8 @@ type SidebarArticle = {
     imageUrl: string;
 };
 
-const initialDiscussions: DiscussionCard[] = [
-    {
-        id: 1,
-        label: 'Equipment',
-        title: 'What is that one app that would help you in your game?',
-        excerpt:
-            'Looking for recommendations on apps that can track my scores, analyze my form, and help me improve consistency.',
-        author: 'Rahul Sankar',
-        posted: '1 hour ago',
-        score: 24,
-        viewerVote: null,
-        comments: 8,
-        imageUrl: 'https://www.figma.com/api/mcp/asset/b687925e-112d-4f58-aa14-9a395f64a641',
-    },
-    {
-        id: 2,
-        label: 'Pro Tip',
-        title: 'Mastering the Hook: A Complete Guide',
-        excerpt:
-            'Learn the fundamentals of bowling hook shots, from grip techniques to release points in this guide.',
-        author: 'Sarah Mitchell',
-        posted: '3 hours ago',
-        score: 156,
-        viewerVote: null,
-        comments: 42,
-        imageUrl: 'https://www.figma.com/api/mcp/asset/a58ca32a-171a-42ca-b6fb-d5da0f4d8894',
-    },
-    {
-        id: 3,
-        label: 'Webinar',
-        title: 'Two Handed Righty Spares: Webinar Follow-Up',
-        excerpt:
-            'Newer bowler here trying to find better score consistency. The recent webinar was very helpful.',
-        author: 'Gavin Jager',
-        posted: '5 hours ago',
-        score: 89,
-        viewerVote: null,
-        comments: 23,
-        imageUrl: 'https://www.figma.com/api/mcp/asset/5e4ae40e-310d-432e-a3df-efddd1bf115a',
-    },
-    {
-        id: 4,
-        label: 'Equipment',
-        title: 'Choosing the Right Shoes for League Play',
-        excerpt:
-            'Slide or traction? Here is a quick breakdown of what to look for when buying high-performance shoes.',
-        author: 'Mike Chen',
-        posted: '6 hours ago',
-        score: 67,
-        viewerVote: null,
-        comments: 14,
-        imageUrl: 'https://www.figma.com/api/mcp/asset/399dbf04-a112-473e-b721-b0610467f518',
-    },
-    {
-        id: 5,
-        label: 'Events',
-        title: 'Upcoming Regional Championship: Dates Announced',
-        excerpt:
-            'Mark your calendars. Regional championship registration opens next week for all divisions.',
-        author: 'Tournament Director',
-        posted: '1 day ago',
-        score: 230,
-        viewerVote: null,
-        comments: 85,
-        imageUrl: 'https://www.figma.com/api/mcp/asset/a58ca32a-171a-42ca-b6fb-d5da0f4d8894',
-    },
-    {
-        id: 6,
-        label: 'Local Leagues',
-        title: 'Summer League Sign-ups Now Open',
-        excerpt:
-            'Get your teams ready. Summer league registration is now open for mixed, mens, and womens divisions.',
-        author: 'Community Manager',
-        posted: '1 day ago',
-        score: 45,
-        viewerVote: null,
-        comments: 12,
-        imageUrl: 'https://www.figma.com/api/mcp/asset/b687925e-112d-4f58-aa14-9a395f64a641',
-    },
-];
+const cardLabels = ['Equipment', 'Pro Tip', 'Webinar', 'Events', 'Training', 'Community'];
+const dummyCardImage = '/chatter_placeholder.png';
 
 const mostRead: SidebarArticle[] = [
     {
@@ -128,38 +49,149 @@ const mostRead: SidebarArticle[] = [
 const tags = ['#Equipment', '#ProTips', '#Tournaments', '#LocalLeagues', '#Training', '#GearReview', '#BeginnerHelp'];
 
 export default function ChatterV3Page() {
-    const [discussions, setDiscussions] = useState<DiscussionCard[]>(initialDiscussions);
+    const [discussions, setDiscussions] = useState<Discussion[]>([]);
+    const [topics, setTopics] = useState<Topic[]>([]);
+    const [search, setSearch] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [newDiscussionForm, setNewDiscussionForm] = useState({
+        topic_id: '',
+        title: '',
+        description: '',
+    });
 
-    const handleVote = (discussionId: number, isUpvote: boolean) => {
+    const fetchDiscussions = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get<Discussion[]>('/api/lanes/discussions/feed');
+            setDiscussions(response.data || []);
+            setError(null);
+        } catch (err) {
+            console.error('Error fetching chatter v3 feed:', err);
+            setError('Failed to load discussions');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchTopics = async () => {
+        try {
+            const response = await api.get<Topic[]>('/api/lanes/discussions/topics');
+            setTopics(response.data || []);
+        } catch (err) {
+            console.error('Error fetching topics:', err);
+        }
+    };
+
+    useEffect(() => {
+        fetchDiscussions();
+        fetchTopics();
+    }, []);
+
+    const filteredDiscussions = useMemo(() => {
+        const query = search.trim().toLowerCase();
+        if (!query) {
+            return discussions;
+        }
+
+        return discussions.filter((item) => {
+            return (
+                item.title.toLowerCase().includes(query) ||
+                item.description.toLowerCase().includes(query) ||
+                item.author.name.toLowerCase().includes(query)
+            );
+        });
+    }, [discussions, search]);
+
+    const upvoteClass = (viewerVote: boolean | null) => {
+        return viewerVote === true
+            ? 'bg-green-50 text-[#00a63e]'
+            : 'text-[#99a1af] hover:bg-green-50 hover:text-[#00a63e]';
+    };
+
+    const downvoteClass = (viewerVote: boolean | null) => {
+        return viewerVote === false
+            ? 'bg-red-50 text-red-600'
+            : 'text-[#99a1af] hover:bg-red-50 hover:text-red-600';
+    };
+
+    const scoreTextClass = (pointStr: string) => {
+        if (pointStr.startsWith('+')) return 'text-[#00a63e]';
+        if (pointStr.startsWith('-')) return 'text-red-600';
+        return 'text-[#99a1af]';
+    };
+
+    const handleVote = async (discussionId: number, isUpvote: boolean) => {
         setDiscussions((prev) =>
             prev.map((item) => {
-                if (item.id !== discussionId) {
-                    return item;
-                }
+                if (item.discussion_id !== discussionId) return item;
 
-                if (item.viewerVote === isUpvote) {
-                    return {
-                        ...item,
-                        viewerVote: null,
-                        score: isUpvote ? item.score - 1 : item.score + 1,
-                    };
-                }
+                const currentPoint = item.point;
+                const currentVote = item.viewer_vote;
+                let nextPoint = currentPoint;
+                let nextVote: boolean | null = currentVote;
 
-                if (item.viewerVote === null) {
-                    return {
-                        ...item,
-                        viewerVote: isUpvote,
-                        score: isUpvote ? item.score + 1 : item.score - 1,
-                    };
+                if (currentVote === isUpvote) {
+                    nextVote = null;
+                    nextPoint = isUpvote ? currentPoint - 1 : currentPoint + 1;
+                } else if (currentVote === null) {
+                    nextVote = isUpvote;
+                    nextPoint = isUpvote ? currentPoint + 1 : currentPoint - 1;
+                } else {
+                    nextVote = isUpvote;
+                    nextPoint = isUpvote ? currentPoint + 2 : currentPoint - 2;
                 }
 
                 return {
                     ...item,
-                    viewerVote: isUpvote,
-                    score: isUpvote ? item.score + 2 : item.score - 2,
+                    point: nextPoint,
+                    point_str: nextPoint > 0 ? `+${nextPoint}` : `${nextPoint}`,
+                    viewer_vote: nextVote,
                 };
             })
         );
+
+        try {
+            await api.post('/api/lanes/discussions/vote', {
+                node_type: 'discussion',
+                node_id: discussionId,
+                is_upvote: isUpvote,
+            });
+            const response = await api.get<Discussion[]>(`/api/lanes/discussions/feed`);
+            setDiscussions(response.data || []);
+        } catch (err) {
+            console.error('Error voting on discussion:', err);
+            fetchDiscussions();
+        }
+    };
+
+    const handleCreateDiscussion = async (e: FormEvent) => {
+        e.preventDefault();
+        if (!newDiscussionForm.topic_id || !newDiscussionForm.title || !newDiscussionForm.description) {
+            setError('Please fill in all fields');
+            return;
+        }
+
+        try {
+            setIsSubmitting(true);
+            await api.post('/api/lanes/discussions', {
+                topic_id: parseInt(newDiscussionForm.topic_id, 10),
+                title: newDiscussionForm.title,
+                description: newDiscussionForm.description,
+            });
+
+            setNewDiscussionForm({ topic_id: '', title: '', description: '' });
+            setIsCreateOpen(false);
+            await fetchDiscussions();
+            setError(null);
+        } catch (err) {
+            console.error('Error creating discussion:', err);
+            setError('Failed to create discussion');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -176,9 +208,14 @@ export default function ChatterV3Page() {
                             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#99a1af]" />
                             <input
                                 placeholder="Search discussions, topics, members..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
                                 className="h-10 w-full rounded-[14px] border border-[#e5e7eb] bg-[#f9fafb] pl-9 pr-24 text-sm text-[#101828] placeholder:text-[#99a1af] focus:outline-none"
                             />
-                            <button className="absolute right-1.5 top-1.5 rounded-[10px] bg-[#00a63e] px-5 py-1.5 text-xs font-bold text-white shadow-sm">
+                            <button
+                                onClick={() => setSearch(search.trim())}
+                                className="absolute right-1.5 top-1.5 rounded-[10px] bg-[#00a63e] px-5 py-1.5 text-xs font-bold text-white shadow-sm"
+                            >
                                 Search
                             </button>
                         </div>
@@ -195,67 +232,97 @@ export default function ChatterV3Page() {
 
                 <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_320px]">
                     <section>
-                        <button className="mb-4 flex h-11 w-full items-center justify-center rounded-[10px] bg-[#00a63e] text-sm font-bold text-white shadow-sm hover:bg-[#009136]">
+                        <button
+                            onClick={() => setIsCreateOpen(true)}
+                            className="mb-4 flex h-11 w-full items-center justify-center rounded-[10px] bg-[#00a63e] text-sm font-bold text-white shadow-sm hover:bg-[#009136]"
+                        >
                             + Create Discussion
                         </button>
 
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                            {discussions.map((item) => (
-                                <article
-                                    key={item.id}
-                                    className="overflow-hidden rounded-2xl border border-[#f3f4f6] bg-white shadow-[0px_1px_3px_0px_rgba(0,0,0,0.1),0px_1px_2px_-1px_rgba(0,0,0,0.1)]"
-                                >
-                                    <div className="relative h-44 w-full overflow-hidden">
-                                        <img src={item.imageUrl} alt={item.title} className="h-full w-full object-cover" />
-                                        <span className="absolute left-3 top-3 rounded-full bg-[#00c950] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.3px] text-white">
-                                            {item.label}
-                                        </span>
-                                    </div>
+                        {error && (
+                            <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                                {error}
+                            </div>
+                        )}
 
-                                    <div className="p-4">
-                                        <h3 className="line-clamp-2 text-lg font-bold leading-6 text-[#101828]">{item.title}</h3>
-                                        <p className="mt-2 line-clamp-3 text-sm leading-6 text-[#6a7282]">{item.excerpt}</p>
+                        {loading && (
+                            <div className="mb-4 rounded-xl border border-[#f3f4f6] bg-white px-4 py-8 text-center text-sm text-[#6a7282]">
+                                Loading discussions...
+                            </div>
+                        )}
+
+                        {!loading && filteredDiscussions.length === 0 && (
+                            <div className="mb-4 rounded-xl border border-[#f3f4f6] bg-white px-4 py-8 text-center text-sm text-[#6a7282]">
+                                No discussions found.
+                            </div>
+                        )}
+
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                            {filteredDiscussions.map((item, index) => (
+                                <article
+                                    key={item.discussion_id}
+                                    className="flex h-full flex-col overflow-hidden rounded-2xl border border-[#f3f4f6] bg-white shadow-[0px_1px_3px_0px_rgba(0,0,0,0.1),0px_1px_2px_-1px_rgba(0,0,0,0.1)]"
+                                >
+                                    <Link href={`/chatterv3/${item.uid}`} className="relative block h-44 w-full overflow-hidden">
+                                        <img
+                                            src={dummyCardImage}
+                                            alt={item.title}
+                                            className="h-full w-full object-cover"
+                                            onError={(e) => {
+                                                e.currentTarget.src = '/chatter_placeholder.png';
+                                            }}
+                                        />
+                                        <span className="absolute left-3 top-3 rounded-full bg-[#00c950] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.3px] text-white">
+                                            {cardLabels[index % cardLabels.length]}
+                                        </span>
+                                    </Link>
+
+                                    <div className="flex flex-1 flex-col p-4">
+                                        <Link href={`/chatterv3/${item.uid}`}>
+                                            <h3 className="line-clamp-2 min-h-12 text-lg font-bold leading-6 text-[#101828]">{item.title}</h3>
+                                            <p className="mt-2 line-clamp-3 min-h-[72px] text-sm leading-6 text-[#6a7282]">{item.description}</p>
+                                        </Link>
 
                                         <div className="mt-3 flex items-center gap-2 border-b border-[#f9fafb] pb-3 text-xs text-[#99a1af]">
-                                            <span className="text-[#4a5565]">By {item.author}</span>
+                                            <span className="text-[#4a5565]">By {item.author.name}</span>
                                             <span>•</span>
-                                            <span>{item.posted}</span>
+                                            <span>{item.created}</span>
                                         </div>
 
-                                        <div className="mt-3 flex items-center justify-between text-xs text-[#99a1af]">
+                                        <div className="mt-auto flex min-h-8 items-center justify-between pt-3 text-xs text-[#99a1af]">
                                             <div className="flex items-center gap-4">
                                                 <div className="flex items-center gap-1.5">
                                                     <button
-                                                        onClick={() => handleVote(item.id, true)}
-                                                        className={`rounded p-1 transition-colors ${item.viewerVote === true
-                                                            ? 'bg-green-50 text-[#00a63e]'
-                                                            : 'text-[#99a1af] hover:bg-green-50 hover:text-[#00a63e]'
-                                                            }`}
+                                                        onClick={() => handleVote(item.discussion_id, true)}
+                                                        className={`rounded p-1 transition-colors ${upvoteClass(item.viewer_vote)}`}
                                                         aria-label="Upvote discussion"
                                                     >
                                                         <ChevronUp className="h-4 w-4" />
                                                     </button>
-                                                    <span className={`min-w-[22px] text-center font-semibold ${item.score > 0 ? 'text-[#00a63e]' : item.score < 0 ? 'text-red-600' : 'text-[#99a1af]'
-                                                        }`}>
-                                                        {item.score}
+                                                    <span className={`min-w-[22px] text-center font-semibold ${scoreTextClass(item.point_str)}`}>
+                                                        {item.point_str}
                                                     </span>
                                                     <button
-                                                        onClick={() => handleVote(item.id, false)}
-                                                        className={`rounded p-1 transition-colors ${item.viewerVote === false
-                                                            ? 'bg-red-50 text-red-600'
-                                                            : 'text-[#99a1af] hover:bg-red-50 hover:text-red-600'
-                                                            }`}
+                                                        onClick={() => handleVote(item.discussion_id, false)}
+                                                        className={`rounded p-1 transition-colors ${downvoteClass(item.viewer_vote)}`}
                                                         aria-label="Downvote discussion"
                                                     >
                                                         <ChevronDown className="h-4 w-4" />
                                                     </button>
                                                 </div>
-                                                <div className="flex items-center gap-1">
+                                                <Link href={`/chatterv3/${item.uid}`} className="flex items-center gap-1 hover:text-[#4a5565]">
                                                     <MessageCircle className="h-4 w-4" />
-                                                    <span>{item.comments}</span>
-                                                </div>
+                                                    <span>{item.opinions.length}</span>
+                                                </Link>
                                             </div>
-                                            <button className="flex items-center gap-1 hover:text-[#4a5565]">
+                                            <button
+                                                onClick={() => {
+                                                    if (typeof window !== 'undefined') {
+                                                        navigator.clipboard.writeText(`${window.location.origin}/chatterv3/${item.uid}`);
+                                                    }
+                                                }}
+                                                className="flex items-center gap-1 hover:text-[#4a5565]"
+                                            >
                                                 <Share2 className="h-4 w-4" />
                                                 <span>Share</span>
                                             </button>
@@ -266,9 +333,12 @@ export default function ChatterV3Page() {
                         </div>
 
                         <div className="mt-6 text-center">
-                            <button className="rounded-[10px] border border-[#d1d5db] bg-white px-6 py-2 text-xs font-medium text-[#4a5565] hover:bg-[#f9fafb]">
-                                Load More Discussions
-                            </button>
+                            <Link
+                                href="/chatter"
+                                className="inline-block rounded-[10px] border border-[#d1d5db] bg-white px-6 py-2 text-xs font-medium text-[#4a5565] hover:bg-[#f9fafb]"
+                            >
+                                Open Classic Chatter
+                            </Link>
                         </div>
                     </section>
 
@@ -339,6 +409,79 @@ export default function ChatterV3Page() {
                     </aside>
                 </div>
             </div>
+
+            {isCreateOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+                    <div className="w-full max-w-2xl rounded-2xl bg-white p-5 shadow-2xl">
+                        <div className="mb-4 flex items-center justify-between">
+                            <h2 className="text-lg font-bold text-[#101828]">Create Discussion</h2>
+                            <button
+                                onClick={() => setIsCreateOpen(false)}
+                                className="rounded-md p-1 text-[#6a7282] hover:bg-[#f3f4f6]"
+                                aria-label="Close"
+                            >
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleCreateDiscussion} className="space-y-4">
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-[#4a5565]">Topic</label>
+                                <select
+                                    value={newDiscussionForm.topic_id}
+                                    onChange={(e) => setNewDiscussionForm((prev) => ({ ...prev, topic_id: e.target.value }))}
+                                    className="h-10 w-full rounded-[10px] border border-[#e5e7eb] bg-[#f9fafb] px-3 text-sm text-[#101828] focus:outline-none"
+                                >
+                                    <option value="">Select a topic</option>
+                                    {topics.map((topic) => (
+                                        <option key={topic.id} value={topic.id}>
+                                            {topic.topic}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-[#4a5565]">Title</label>
+                                <input
+                                    value={newDiscussionForm.title}
+                                    onChange={(e) => setNewDiscussionForm((prev) => ({ ...prev, title: e.target.value }))}
+                                    placeholder="Discussion title"
+                                    className="h-10 w-full rounded-[10px] border border-[#e5e7eb] bg-[#f9fafb] px-3 text-sm text-[#101828] focus:outline-none"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-[#4a5565]">Description</label>
+                                <textarea
+                                    value={newDiscussionForm.description}
+                                    onChange={(e) => setNewDiscussionForm((prev) => ({ ...prev, description: e.target.value }))}
+                                    rows={5}
+                                    placeholder="Write your discussion"
+                                    className="w-full rounded-[10px] border border-[#e5e7eb] bg-[#f9fafb] px-3 py-2 text-sm text-[#101828] focus:outline-none"
+                                />
+                            </div>
+
+                            <div className="flex justify-end gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsCreateOpen(false)}
+                                    className="rounded-[10px] border border-[#d1d5db] bg-white px-4 py-2 text-sm font-medium text-[#4a5565]"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className="rounded-[10px] bg-[#00a63e] px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
+                                >
+                                    {isSubmitting ? 'Posting...' : 'Post Discussion'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
