@@ -44,7 +44,7 @@ const navigation = [
     { name: 'Newsfeed', href: '/feedv3', icon: Home },
     // { name: 'Pro Players', href: '/pro-players', icon: Trophy },
     { name: 'Chatter', href: '/chatter', icon: Lightbulb, status: 'BETA' },
-    { name: 'ChatterV3', href: '/chatterv3', icon: Lightbulb, status: 'BETA' },
+    { name: 'ChatterV3', href: '/chatterv3', icon: Lightbulb, status: 'UPCOMING' },
     { name: 'Trading Cards', href: '/trading-cards', icon: Zap, status: 'BETA' },
     // { name: 'Roadmap', href: '/roadmap', icon: Map },
     { name: 'Overview', href: '/overview', icon: BarChart3, status: 'UPCOMING' },
