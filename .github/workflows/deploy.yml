@@ -20,19 +20,42 @@ jobs:
       - name: Deploy to VPS
         run: |
           ssh -o StrictHostKeyChecking=no root@31.97.135.175 "
+            REPO='${{ github.repository }}'
+
+            case \"\$REPO\" in
+              'zamansheikh/bowlersnetwork')
+                APP_NAME='bowlersnetwork'
+                DEPLOY_DIR='/var/www/bowlersnetwork'
+                INSTALL='bun install'
+                BUILD='bun run build'
+                START='bun run start'
+                ;;
+              'zamansheikh/amateur_player')
+                APP_NAME='amateur_player'
+                DEPLOY_DIR='/var/www/amateur_player'
+                INSTALL='bun install'
+                BUILD='bun run build'
+                START='bun run start'
+                ;;
+              *)
+                echo \"Unsupported repository: \$REPO\"
+                exit 1
+                ;;
+            esac
+
             export PATH=\$PATH:/root/.bun/bin &&  # Existing for Bun
             export PATH=/root/.nvm/versions/node/v20.19.5/bin:\$PATH &&  # Add this for Node 20 (replace with your path)
-            cd /var/www/bowlersnetwork &&
+            cd \"\$DEPLOY_DIR\" &&
             git stash &&
             GIT_SSH_COMMAND=\"ssh -i ~/.ssh/id_ed25519_deploy\" git pull origin main &&
-            bun install &&
-            bun run build &&
-            if tmux has-session -t bowlersnetwork 2>/dev/null; then
-              echo \"Already session running: bowlersnetwork. Killing it...\"
-              tmux kill-session -t bowlersnetwork
+            \$INSTALL &&
+            \$BUILD &&
+            if tmux has-session -t \$APP_NAME 2>/dev/null; then
+              echo \"Already session running: \$APP_NAME. Killing it...\"
+              tmux kill-session -t \$APP_NAME
             fi &&
-            echo \"Starting new session: bowlersnetwork\" &&
-            tmux new-session -d -s bowlersnetwork 'bun run start' &&
-            echo \"Successfully started 'bun run start' in tmux session bowlersnetwork\"
+            echo \"Starting new session: \$APP_NAME\" &&
+            tmux new-session -d -s \$APP_NAME \"\$START\" &&
+            echo \"Successfully started '\$START' in tmux session \$APP_NAME\"
           "
- # GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519_deploy" git clone git@github.com:zamansheikh/bowlersnetwork.git .
+  # GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519_deploy" git clone git@github.com:zamansheikh/bowlersnetwork.git .
