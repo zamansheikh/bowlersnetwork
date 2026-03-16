@@ -1,13 +1,12 @@
 'use client';
 
-import { ImageIcon, BarChart3, Calendar, X, Plus, Minus, Clock } from 'lucide-react';
+import { ImageIcon, BarChart3, Smile, X, Plus, Minus, Clock } from 'lucide-react';
 import { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCloudUpload } from '@/lib/useCloudUpload';
 import { api } from '@/lib/api';
 import Image from 'next/image';
-import { CreateDefaultPostRequest, CreatePollRequest, FeedV3Post } from '@/types/feedv3';
+import { CreateDefaultPostRequest, CreatePollRequest } from '@/types/feedv3';
 
 interface CreatePostV3Props {
     onPostCreated?: () => void;
@@ -17,7 +16,6 @@ type PostMode = 'default' | 'poll';
 
 export default function CreatePostV3({ onPostCreated }: CreatePostV3Props) {
     const { user } = useAuth();
-    const router = useRouter();
     const [isExpanded, setIsExpanded] = useState(false);
     const [postMode, setPostMode] = useState<PostMode>('default');
 
@@ -70,6 +68,11 @@ export default function CreatePostV3({ onPostCreated }: CreatePostV3Props) {
         setIsExpanded(true);
     };
 
+    const handleEmojiClick = () => {
+        setPostMode('default');
+        setIsExpanded(true);
+    };
+
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (!files || files.length === 0) return;
@@ -81,10 +84,6 @@ export default function CreatePostV3({ onPostCreated }: CreatePostV3Props) {
 
     const removeFile = (index: number) => {
         setSelectedFiles(prev => prev.filter((_, i) => i !== index));
-    };
-
-    const handleEventClick = () => {
-        router.push('/events');
     };
 
     // Poll option handlers
@@ -218,10 +217,10 @@ export default function CreatePostV3({ onPostCreated }: CreatePostV3Props) {
         : postText.trim() || selectedFiles.length > 0;
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-4 md:p-6">
+        <div className="bg-white rounded-2xl border border-[#f3f4f6] shadow-[0px_1px_3px_0px_rgba(0,0,0,0.1),0px_1px_2px_0px_rgba(0,0,0,0.1)] overflow-hidden">
+            <div className="px-4 pt-4 pb-0">
                 <form onSubmit={handleSubmit}>
-                    <div className="flex gap-4 mb-4">
+                    <div className="flex items-start gap-3 mb-4">
                         {/* Profile Picture */}
                         <img
                             src={user?.profile_media?.profile_picture_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=Bob"}
@@ -231,48 +230,22 @@ export default function CreatePostV3({ onPostCreated }: CreatePostV3Props) {
 
                         {/* Input Area */}
                         <div className="flex-1 min-w-0">
-                            {/* Mode Tabs */}
-                            {isExpanded && (
-                                <div className="flex gap-2 mb-4">
-                                    <button
-                                        type="button"
-                                        onClick={() => setPostMode('default')}
-                                        className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${postMode === 'default'
-                                            ? 'bg-green-100 text-green-700'
-                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                            }`}
-                                    >
-                                        Post
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setPostMode('poll')}
-                                        className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${postMode === 'poll'
-                                            ? 'bg-lime-100 text-lime-700'
-                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                            }`}
-                                    >
-                                        📊 Poll
-                                    </button>
-                                </div>
-                            )}
-
                             {/* Default Post Input */}
                             {postMode === 'default' && (
                                 <>
                                     {!isExpanded ? (
                                         <div
                                             onClick={handleExpandClick}
-                                            className="text-xl text-gray-500 placeholder-gray-500 p-2 rounded-2xl hover:bg-gray-50 cursor-pointer transition-colors"
+                                            className="h-12 w-full rounded-[14px] bg-[#f9fafb] px-4 flex items-center text-[16px] text-[#6a7282] cursor-pointer"
                                         >
-                                            What&apos;s happening?!
+                                            What&apos;s happening?
                                         </div>
                                     ) : (
                                         <textarea
                                             value={postText}
                                             onChange={(e) => setPostText(e.target.value)}
-                                            placeholder="What's happening?!"
-                                            className="w-full text-xl text-gray-800 placeholder-gray-400 border-0 resize-none focus:outline-none min-h-[120px]"
+                                            placeholder="What's happening?"
+                                            className="w-full rounded-[14px] bg-[#f9fafb] px-4 py-3 text-[16px] leading-6 text-[#364153] placeholder:text-[#6a7282] border-0 resize-none focus:outline-none min-h-[120px]"
                                             disabled={isPosting}
                                             autoFocus
                                         />
@@ -440,18 +413,18 @@ export default function CreatePostV3({ onPostCreated }: CreatePostV3Props) {
                     )}
 
                     {/* Action Buttons Row */}
-                    <div className="flex items-center justify-between gap-2 border-t border-gray-100 pt-3">
-                        <div className="flex items-center gap-1 sm:gap-4">
+                    <div className="h-[57px] border-t border-[#f3f4f6] flex items-center justify-between pt-px">
+                        <div className="flex items-center gap-4 sm:gap-5">
                             {/* Image/Video Button */}
                             <button
                                 type="button"
                                 onClick={handlePhotoVideoClick}
                                 disabled={isPosting || postMode === 'poll'}
-                                className={`flex items-center gap-1.5 h-10 px-2 sm:px-3 rounded-full hover:bg-lime-50 text-[#8BC342] transition-colors hover:text-[#6fa332] disabled:opacity-50 disabled:cursor-not-allowed shrink-0 ${postMode === 'poll' ? 'opacity-50' : ''}`}
+                                className={`flex items-center gap-2 text-[14px] leading-5 text-[#4a5565] transition-colors hover:text-[#1e2939] disabled:opacity-50 disabled:cursor-not-allowed shrink-0 ${postMode === 'poll' ? 'opacity-50' : ''}`}
                                 title="Add photo or video"
                             >
-                                <ImageIcon className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
-                                <span className="text-xs sm:text-sm font-bold">Media</span>
+                                <ImageIcon className="w-5 h-5 shrink-0" />
+                                <span>Media</span>
                             </button>
 
                             {/* Poll Button */}
@@ -459,39 +432,39 @@ export default function CreatePostV3({ onPostCreated }: CreatePostV3Props) {
                                 type="button"
                                 onClick={handlePollClick}
                                 disabled={isPosting}
-                                className={`flex items-center gap-1.5 h-10 px-2 sm:px-3 rounded-full transition-colors shrink-0 ${postMode === 'poll'
-                                    ? 'bg-lime-100 text-[#8BC342]'
-                                    : 'text-[#8BC342] hover:bg-lime-50 hover:text-[#6fa332]'
+                                className={`flex items-center gap-2 text-[14px] leading-5 transition-colors shrink-0 ${postMode === 'poll'
+                                    ? 'text-[#1e2939]'
+                                    : 'text-[#4a5565] hover:text-[#1e2939]'
                                     } disabled:opacity-50`}
                                 title="Create a poll"
                             >
-                                <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
-                                <span className="text-xs sm:text-sm font-bold">Poll</span>
+                                <BarChart3 className="w-5 h-5 shrink-0" />
+                                <span>Poll</span>
                             </button>
 
-                            {/* Event Button */}
+                            {/* Emoji Button */}
                             <button
                                 type="button"
-                                onClick={handleEventClick}
+                                onClick={handleEmojiClick}
                                 disabled={isPosting}
-                                className="flex items-center gap-1.5 h-10 px-2 sm:px-3 rounded-full hover:bg-lime-50 text-[#8BC342] transition-colors hover:text-[#6fa332] disabled:opacity-50 shrink-0"
-                                title="Go to Events"
+                                className="flex items-center justify-center text-[#4a5565] hover:text-[#1e2939] transition-colors disabled:opacity-50 shrink-0"
+                                title="Add emoji"
                             >
-                                <Calendar className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
-                                <span className="text-xs sm:text-sm font-bold">Event</span>
+                                <Smile className="w-5 h-5" />
                             </button>
+
                         </div>
 
                         {/* Post Button */}
                         <button
                             type="submit"
                             disabled={isPosting || isUploadingAny || !canSubmit}
-                            className={`font-bold py-2 px-6 sm:px-10 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm sm:text-lg whitespace-nowrap ${postMode === 'poll' ? 'bg-[#8BC342] hover:bg-[#6fa332]' : ''
+                            className={`h-10 px-7 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-white text-[16px] leading-6 whitespace-nowrap ${postMode === 'poll' ? 'bg-[#00c950] hover:bg-[#00b347]' : ''
                                 }`}
                             style={{
                                 backgroundColor: (isPosting || isUploadingAny || !canSubmit)
                                     ? '#d1d5db'
-                                    : postMode === 'poll' ? undefined : '#8BC342'
+                                    : postMode === 'poll' ? undefined : '#00c950'
                             }}
                         >
                             {isPosting ? 'Posting...' : postMode === 'poll' ? 'Create Poll' : 'Post'}

@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import GlobalHeader from '@/components/GlobalHeader';
 import NotificationBanner from '@/components/NotificationBanner';
+import TopShortcutNav from '@/components/TopShortcutNav';
 
 // Profile Completion Check Component
 function ProfileCompletionCheck({ children }: { children: React.ReactNode }) {
@@ -44,6 +45,7 @@ const navigation = [
     { name: 'Newsfeed', href: '/feedv3', icon: Home },
     // { name: 'Pro Players', href: '/pro-players', icon: Trophy },
     { name: 'Chatter', href: '/chatter', icon: Lightbulb, status: 'BETA' },
+    { name: 'ChatterV3', href: '/chatterv3', icon: Lightbulb, status: 'BETA' },
     { name: 'Trading Cards', href: '/trading-cards', icon: Zap, status: 'BETA' },
     // { name: 'Roadmap', href: '/roadmap', icon: Map },
     { name: 'Overview', href: '/overview', icon: BarChart3, status: 'UPCOMING' },
@@ -415,6 +417,7 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                         <main className="flex-1 overflow-y-auto">
                             <NotificationBanner />
                             <GlobalHeader />
+                            <TopShortcutNav />
                             {children}
                         </main>
                     </div>

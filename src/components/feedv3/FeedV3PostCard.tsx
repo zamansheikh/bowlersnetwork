@@ -538,7 +538,7 @@ export default function FeedV3PostCard({
                 <div className="p-6 cursor-pointer" onClick={handlePostClick}>
                     <div className="flex min-h-[48px] items-start justify-between gap-3 mb-4">
                         <div
-                            className="flex items-start gap-3 cursor-pointer shrink-0 min-w-0"
+                            className="flex flex-1 min-w-0 items-start gap-3 cursor-pointer"
                             onClick={handleUserClick}
                         >
                             <img
@@ -546,9 +546,9 @@ export default function FeedV3PostCard({
                                 alt={localPost.author.name}
                                 className="w-12 h-12 rounded-full object-cover shrink-0"
                             />
-                            <div className="min-w-0 h-6">
-                                <div className="flex items-center gap-2 text-[14px] min-w-0 leading-5">
-                                    <h3 className="font-bold text-[#101828] text-[16px] leading-6 truncate">{localPost.author.name}</h3>
+                            <div className="min-w-0">
+                                <h3 className="font-bold text-[#101828] text-[16px] leading-6 truncate">{localPost.author.name}</h3>
+                                <div className="mt-0.5 flex items-center gap-1.5 text-[14px] min-w-0 leading-5">
                                     <span className="text-[#6a7282] truncate">@{localPost.author.username}</span>
                                     <span className="text-[#99a1af] shrink-0">&middot; {localPost.created}</span>
                                 </div>
@@ -663,7 +663,7 @@ export default function FeedV3PostCard({
                         </div>
 
                         <button className="size-[34px] rounded-full flex items-center justify-center text-[#6a7282] hover:bg-gray-100 transition-colors">
-                            <Bookmark className="w-[11px] h-[15px]" />
+                            <Bookmark className="w-[11px] h-[15px] md:w-[14px] md:h-[18px]" />
                         </button>
                     </div>
                 </div>
