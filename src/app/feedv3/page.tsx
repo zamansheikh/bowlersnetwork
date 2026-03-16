@@ -5,6 +5,7 @@ import { api } from '@/lib/api';
 import { FeedV3Post, PaginatedResponse } from '@/types/feedv3';
 import { FeedV3PostCard, CreatePostV3 } from '@/components/feedv3';
 import FeedSidebar from '@/components/FeedSidebar';
+import TopShortcutNav from '@/components/TopShortcutNav';
 
 export default function FeedV3Page() {
     const [posts, setPosts] = useState<FeedV3Post[]>([]);
@@ -131,6 +132,10 @@ export default function FeedV3Page() {
                 <div className="flex flex-col lg:flex-row gap-4 md:gap-8">
                     {/* Main Content */}
                     <div className="flex-1 w-full max-w-4xl">
+                        <div className="mb-4 md:mb-6 overflow-hidden rounded-xl border border-gray-200 bg-white">
+                            <TopShortcutNav />
+                        </div>
+
                         {/* Create Post Section */}
                         <div className="mb-4 md:mb-6">
                             <CreatePostV3 onPostCreated={reloadFeed} />

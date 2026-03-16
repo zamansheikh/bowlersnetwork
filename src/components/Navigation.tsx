@@ -9,7 +9,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import GlobalHeader from '@/components/GlobalHeader';
 import NotificationBanner from '@/components/NotificationBanner';
-import TopShortcutNav from '@/components/TopShortcutNav';
 
 // Profile Completion Check Component
 function ProfileCompletionCheck({ children }: { children: React.ReactNode }) {
@@ -417,7 +416,6 @@ export default function Navigation({ children }: { children: React.ReactNode }) 
                         <main className="flex-1 overflow-y-auto">
                             <NotificationBanner />
                             <GlobalHeader />
-                            <TopShortcutNav />
                             {children}
                         </main>
                     </div>

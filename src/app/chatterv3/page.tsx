@@ -1,6 +1,7 @@
 'use client';
 
-import { Bell, Heart, MessageCircle, Search, Share2, UserCircle2 } from 'lucide-react';
+import { useState } from 'react';
+import { Bell, ChevronDown, ChevronUp, MessageCircle, Search, Share2, UserCircle2 } from 'lucide-react';
 
 type DiscussionCard = {
     id: number;
@@ -9,7 +10,8 @@ type DiscussionCard = {
     excerpt: string;
     author: string;
     posted: string;
-    likes: number;
+    score: number;
+    viewerVote: boolean | null;
     comments: number;
     imageUrl: string;
 };
@@ -21,7 +23,7 @@ type SidebarArticle = {
     imageUrl: string;
 };
 
-const discussions: DiscussionCard[] = [
+const initialDiscussions: DiscussionCard[] = [
     {
         id: 1,
         label: 'Equipment',
@@ -30,7 +32,8 @@ const discussions: DiscussionCard[] = [
             'Looking for recommendations on apps that can track my scores, analyze my form, and help me improve consistency.',
         author: 'Rahul Sankar',
         posted: '1 hour ago',
-        likes: 24,
+        score: 24,
+        viewerVote: null,
         comments: 8,
         imageUrl: 'https://www.figma.com/api/mcp/asset/b687925e-112d-4f58-aa14-9a395f64a641',
     },
@@ -42,7 +45,8 @@ const discussions: DiscussionCard[] = [
             'Learn the fundamentals of bowling hook shots, from grip techniques to release points in this guide.',
         author: 'Sarah Mitchell',
         posted: '3 hours ago',
-        likes: 156,
+        score: 156,
+        viewerVote: null,
         comments: 42,
         imageUrl: 'https://www.figma.com/api/mcp/asset/a58ca32a-171a-42ca-b6fb-d5da0f4d8894',
     },
@@ -54,7 +58,8 @@ const discussions: DiscussionCard[] = [
             'Newer bowler here trying to find better score consistency. The recent webinar was very helpful.',
         author: 'Gavin Jager',
         posted: '5 hours ago',
-        likes: 89,
+        score: 89,
+        viewerVote: null,
         comments: 23,
         imageUrl: 'https://www.figma.com/api/mcp/asset/5e4ae40e-310d-432e-a3df-efddd1bf115a',
     },
@@ -66,7 +71,8 @@ const discussions: DiscussionCard[] = [
             'Slide or traction? Here is a quick breakdown of what to look for when buying high-performance shoes.',
         author: 'Mike Chen',
         posted: '6 hours ago',
-        likes: 67,
+        score: 67,
+        viewerVote: null,
         comments: 14,
         imageUrl: 'https://www.figma.com/api/mcp/asset/399dbf04-a112-473e-b721-b0610467f518',
     },
@@ -78,7 +84,8 @@ const discussions: DiscussionCard[] = [
             'Mark your calendars. Regional championship registration opens next week for all divisions.',
         author: 'Tournament Director',
         posted: '1 day ago',
-        likes: 230,
+        score: 230,
+        viewerVote: null,
         comments: 85,
         imageUrl: 'https://www.figma.com/api/mcp/asset/a58ca32a-171a-42ca-b6fb-d5da0f4d8894',
     },
@@ -90,7 +97,8 @@ const discussions: DiscussionCard[] = [
             'Get your teams ready. Summer league registration is now open for mixed, mens, and womens divisions.',
         author: 'Community Manager',
         posted: '1 day ago',
-        likes: 45,
+        score: 45,
+        viewerVote: null,
         comments: 12,
         imageUrl: 'https://www.figma.com/api/mcp/asset/b687925e-112d-4f58-aa14-9a395f64a641',
     },
@@ -120,6 +128,40 @@ const mostRead: SidebarArticle[] = [
 const tags = ['#Equipment', '#ProTips', '#Tournaments', '#LocalLeagues', '#Training', '#GearReview', '#BeginnerHelp'];
 
 export default function ChatterV3Page() {
+    const [discussions, setDiscussions] = useState<DiscussionCard[]>(initialDiscussions);
+
+    const handleVote = (discussionId: number, isUpvote: boolean) => {
+        setDiscussions((prev) =>
+            prev.map((item) => {
+                if (item.id !== discussionId) {
+                    return item;
+                }
+
+                if (item.viewerVote === isUpvote) {
+                    return {
+                        ...item,
+                        viewerVote: null,
+                        score: isUpvote ? item.score - 1 : item.score + 1,
+                    };
+                }
+
+                if (item.viewerVote === null) {
+                    return {
+                        ...item,
+                        viewerVote: isUpvote,
+                        score: isUpvote ? item.score + 1 : item.score - 1,
+                    };
+                }
+
+                return {
+                    ...item,
+                    viewerVote: isUpvote,
+                    score: isUpvote ? item.score + 2 : item.score - 2,
+                };
+            })
+        );
+    };
+
     return (
         <div className="min-h-screen bg-[#f9fafb]">
             <div className="mx-auto max-w-[1220px] px-4 py-6">
@@ -182,9 +224,31 @@ export default function ChatterV3Page() {
 
                                         <div className="mt-3 flex items-center justify-between text-xs text-[#99a1af]">
                                             <div className="flex items-center gap-4">
-                                                <div className="flex items-center gap-1">
-                                                    <Heart className="h-4 w-4" />
-                                                    <span>{item.likes}</span>
+                                                <div className="flex items-center gap-1.5">
+                                                    <button
+                                                        onClick={() => handleVote(item.id, true)}
+                                                        className={`rounded p-1 transition-colors ${item.viewerVote === true
+                                                            ? 'bg-green-50 text-[#00a63e]'
+                                                            : 'text-[#99a1af] hover:bg-green-50 hover:text-[#00a63e]'
+                                                            }`}
+                                                        aria-label="Upvote discussion"
+                                                    >
+                                                        <ChevronUp className="h-4 w-4" />
+                                                    </button>
+                                                    <span className={`min-w-[22px] text-center font-semibold ${item.score > 0 ? 'text-[#00a63e]' : item.score < 0 ? 'text-red-600' : 'text-[#99a1af]'
+                                                        }`}>
+                                                        {item.score}
+                                                    </span>
+                                                    <button
+                                                        onClick={() => handleVote(item.id, false)}
+                                                        className={`rounded p-1 transition-colors ${item.viewerVote === false
+                                                            ? 'bg-red-50 text-red-600'
+                                                            : 'text-[#99a1af] hover:bg-red-50 hover:text-red-600'
+                                                            }`}
+                                                        aria-label="Downvote discussion"
+                                                    >
+                                                        <ChevronDown className="h-4 w-4" />
+                                                    </button>
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <MessageCircle className="h-4 w-4" />
